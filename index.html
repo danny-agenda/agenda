@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="standaard" data-font="atkinson" data-ui="groot">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toegankelijke gedeelde agenda</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--fg:#000;--card:#f2f2f2;--bd:#000;--focus:#0033ff;--btn:#000;--btnfg:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html[data-theme=donker]{--bg:#000;--fg:#fff;--card:#1a1a1a;--bd:#fff;--focus:#ffe600;--btn:#fff;--btnfg:#000;color-scheme:dark}
+html[data-theme=geel]{--bg:#000;--fg:#ffe600;--card:#111;--bd:#ffe600;--focus:#00e5ff;--btn:#ffe600;--btnfg:#000;color-scheme:dark}
+html[data-theme=blauwgeel]{--bg:#000080;--fg:#ffff00;--card:#00009c;--bd:#ffff00;--focus:#00ffff;--btn:#ffff00;--btnfg:#000080;color-scheme:dark}
+html[data-theme=blauwwit]{--bg:#000080;--fg:#fff;--card:#00009c;--bd:#fff;--focus:#ffe600;--btn:#fff;--btnfg:#000080;color-scheme:dark}
+html[data-font=atkinson] body{font-family:"Atkinson Hyperlegible",Arial,Helvetica,sans-serif}
+html[data-font=dyslexic] body{font-family:"OpenDyslexic","Comic Sans MS","Chalkboard SE",sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-size:1.25rem;line-height:1.6;overflow-wrap:anywhere}
+main,header{max-width:62rem;margin:0 auto;padding:1rem}
+h1{font-size:2rem;margin:.3em 0}h2{font-size:1.6rem;margin:.6em 0 .3em}h3{font-size:1.35rem;margin:.4em 0}
+:focus,:focus:not(:focus-visible){outline:.25rem solid var(--focus);outline-offset:.2rem}
+.skip{position:absolute;left:-999px;top:0;background:var(--btn);color:var(--btnfg);padding:1rem;z-index:9}.skip:focus{left:0}
+button,select,input[type=text],input[type=date],input[type=time]{font:inherit;color:var(--fg);background:var(--bg);border:.2rem solid var(--bd);border-radius:.5rem;min-height:3.5rem;min-width:min(3.5rem,100%);padding:.5rem 1rem}
+button{cursor:pointer;background:var(--btn);color:var(--btnfg);font-weight:700;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+select,input{max-width:100%}
+button[aria-pressed=true]{background:var(--bg);color:var(--fg);box-shadow:inset 0 0 0 .2rem var(--fg);text-decoration:underline}
+button[aria-disabled=true]{opacity:.45}
+input[type=text],input[type=date],input[type=time],select{width:100%}
+input[type=color]{width:6rem;height:3.5rem;border:.2rem solid var(--bd);padding:0;background:none}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:.5rem 0}
+.panel,.item,.dag,form{background:var(--card);border:.2rem solid var(--bd);border-radius:.75rem;padding:1rem;margin:.75rem 0}
+fieldset{border:.2rem solid var(--bd);border-radius:.5rem;margin:.75rem 0;min-width:0;max-width:100%}legend{font-weight:700;padding:0 .5rem;max-width:100%}
+label{display:block;font-weight:700;margin:.5rem 0 .2rem}
+label.chk{display:flex;max-width:100%;align-items:center;gap:.5rem;margin-right:0;min-height:3.5rem;overflow-wrap:anywhere}
+input[type=checkbox]{width:2rem;height:2rem}
+ul{list-style:none;padding:0;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(9rem,100%),1fr));gap:.75rem}
+.grid button{width:100%;text-align:center}
+.item{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;border-left-width:.8rem}
+.item .t{font-size:1.8rem;font-weight:700}
+.mic{font-size:1.6rem;width:100%;min-height:5rem}
+#status{font-weight:700;min-height:1.6em}
+[hidden]{display:none!important}
+.chips{display:flex;flex-wrap:wrap;gap:.25rem;justify-content:center;margin-top:.25rem}
+.chip{display:inline-flex;align-items:center;gap:.2rem;background:var(--bg);color:var(--fg);border:.2rem solid;border-radius:.35rem;padding:0 .3rem;font-size:.85rem;font-weight:700;line-height:1.4}
+.sw{display:inline-block;width:.8rem;height:.8rem;border-radius:.15rem;border:.1rem solid var(--fg)}
+#printArea{position:fixed;inset:0;overflow:auto;background:#fff;color:#000;padding:1rem;z-index:20}#printArea button{background:#000;color:#fff;border-color:#000}#printArea :focus{outline-color:#0033ff}
+.blok{border-width:.3rem;padding:.4rem .75rem;gap:.5rem;margin:.25rem 0}.blok br{display:none}.blok .t{font-size:1.1rem;margin-right:.4rem}.blokken{display:flex;flex-wrap:wrap;gap:.5rem}.blokken .blok{margin:0}
+.vandaag{border-style:double!important;border-width:.4rem!important}.vandaag b{text-decoration:underline}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.25rem}.cal button{width:100%;min-width:0;padding:.2rem;min-height:4rem;font-size:.85rem;overflow:hidden}.cal .chip{font-size:.7rem;padding:0 .15rem}.wdn{text-align:center;font-weight:700}
+html[data-font=arial] body{font-family:Arial,Helvetica,sans-serif}html[data-font=verdana] body{font-family:Verdana,Geneva,sans-serif}html[data-font=times] body{font-family:"Times New Roman",Times,serif}
+html[data-hide~=inst] #instBtn,html[data-hide~=inst] #inst,html[data-hide~=spraak] #spraakSec,html[data-hide~=samen] #samenSet,html[data-hide~=herhalen] label[for=fR],html[data-hide~=herhalen] #fR,html[data-hide~=herhalen] #rBox,html[data-hide~=eind] label[for=fE],html[data-hide~=eind] #fE,html[data-hide~=act] label[for=fAct],html[data-hide~=act] #fAct,html[data-hide~=print] #print,html[data-hide~=print] [data-print],html[data-hide~=weergaven] [data-view=week],html[data-hide~=weergaven] [data-view=maand],html[data-hide~=weergaven] [data-view=jaar]{display:none!important}
+input[type=password],textarea{font:inherit;color:var(--fg);background:var(--bg);border:.2rem solid var(--bd);border-radius:.5rem;padding:.5rem 1rem;min-height:3.5rem}input[type=password]{width:min(9rem,100%)}textarea{width:100%;min-height:8rem}
+@media print{body.pr header,body.pr main{display:none!important}body{background:#fff!important}#printArea{position:static!important;overflow:visible!important}#printArea .noprint{display:none!important}#printArea h1{font-size:2rem}.pi{border-left:.6rem solid #000;padding:.5rem 1rem;margin:.75rem 0;page-break-inside:avoid}.pi .t{font-size:1.6rem;font-weight:700}}
+/* Standaard-interface voor gebruikers zonder visuele beperking */
+html[data-ui=normaal] body{font-size:1rem;line-height:1.4}
+html[data-ui=normaal] button,html[data-ui=normaal] select,html[data-ui=normaal] input[type=text],html[data-ui=normaal] input[type=date],html[data-ui=normaal] input[type=time]{min-height:2.5rem;min-width:2.5rem;padding:.25rem .75rem;border-width:.1rem;font-weight:400}
+html[data-ui=normaal] .mic{font-size:1.1rem;min-height:3rem}
+html[data-ui=normaal] .item .t{font-size:1.2rem}
+html[data-ui=normaal] :focus{outline-width:.1875rem}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Ga direct naar de inhoud</a>
+<header>
+<h1>Gedeelde agenda</h1>
+<p id="wie"></p>
+<p id="sync" style="font-size:.9rem;margin:.2rem 0"></p>
+<div id="wissel" class="row" role="group" aria-label="Snel wisselen" hidden></div>
+<div id="pinBox" class="row" hidden><label for="pinIn">Pincode van <span id="pinWho"></span></label><input type="password" id="pinIn" inputmode="numeric" maxlength="4" autocomplete="off"><button id="pinOk" type="button">Bevestigen</button><button id="pinNo" type="button">Annuleren</button></div>
+<button id="logout" hidden>Uitloggen</button>
+</header>
+<main id="main">
+<p id="status" role="status" aria-live="polite"></p>
+
+<section id="login" aria-labelledby="loginH">
+<h2 id="loginH" tabindex="-1">Wie bent u?</h2>
+<label for="lgL">Taal / Nyelv</label><select id="lgL"></select>
+<ul id="users" class="grid" aria-label="Gebruikers"></ul>
+<form id="nf"><label for="nn">Nieuwe gebruiker: typ uw naam</label>
+<input type="text" id="nn" required maxlength="30" autocomplete="off">
+<div class="row"><button type="submit">Aanmaken en inloggen</button></div></form>
+<p>Dit is een prototype: er is nog geen wachtwoord.</p>
+</section>
+
+<div id="app" hidden>
+<button id="instBtn" aria-expanded="false" aria-controls="inst">Instellingen tonen</button>
+<section id="inst" class="panel" aria-labelledby="instH" hidden>
+<h2 id="instH">Mijn instellingen</h2>
+<fieldset><legend>Taal / Nyelv</legend><select id="lgS" aria-label="Taal / Nyelv"></select></fieldset>
+<p id="welkom"></p>
+<fieldset><legend>Soort agenda</legend><div class="row">
+<button data-ui-btn="groot" aria-pressed="true">Grote knoppen (slechtziend of blind)</button>
+<button data-ui-btn="normaal" aria-pressed="false">Gewone agenda: compact, voor goedzienden</button></div></fieldset>
+<fieldset><legend>Contrastthema</legend><div class="row">
+<button data-theme-btn="standaard" aria-pressed="true">Standaard: zwart op wit</button>
+<button data-theme-btn="donker" aria-pressed="false">Donker: wit op zwart</button>
+<button data-theme-btn="geel" aria-pressed="false">Zwart met gele letters</button>
+<button data-theme-btn="blauwgeel" aria-pressed="false">Blauw met gele letters</button>
+<button data-theme-btn="blauwwit" aria-pressed="false">Blauw met witte letters</button></div></fieldset>
+<fieldset><legend>Lettertype</legend><div class="row">
+<button data-font-btn="atkinson" aria-pressed="true">Atkinson Hyperlegible</button>
+<button data-font-btn="arial" aria-pressed="false">Arial</button><button data-font-btn="verdana" aria-pressed="false">Verdana</button><button data-font-btn="times" aria-pressed="false">Times New Roman</button>
+<button data-font-btn="dyslexic" aria-pressed="false">OpenDyslexic</button></div></fieldset>
+<fieldset><legend>Lettergrootte</legend><div class="row">
+<button id="minus" aria-label="Tekst kleiner">&minus;</button>
+<span id="sz" aria-live="polite"></span>
+<button id="plus" aria-label="Tekst groter">+</button></div></fieldset>
+<fieldset><legend>Mijn kleur</legend><div class="row">
+<label for="kleur" style="margin:0">Kies een kleur</label><input type="color" id="kleur"></div>
+<p>Uw afspraken tonen deze kleur, én altijd uw naam.</p></fieldset>
+<fieldset><legend>Overzicht van dag, week en maand</legend><div class="row">
+<button data-chips-btn="nee" aria-pressed="true">Lijst met details</button>
+<button data-chips-btn="ja" aria-pressed="false">Kadertjes met kleur en uur</button></div></fieldset>
+<fieldset><legend>Snelkeuze bij een nieuwe afspraak</legend><div class="row">
+<button data-snel-btn="ja" aria-pressed="false">Knoppen voor datum en tijd tonen</button>
+<button data-snel-btn="nee" aria-pressed="true">Niet tonen</button></div></fieldset>
+<fieldset><legend>Mijn vaste activiteiten (keuzemenu)</legend>
+<ul id="actBox"></ul>
+<label for="na">Nieuwe activiteit</label><input type="text" id="na" maxlength="40" autocomplete="off">
+<div class="row"><button id="naBtn" type="button">Activiteit toevoegen</button></div></fieldset>
+<fieldset><legend>Agenda’s van anderen die ik ook wil zien</legend>
+<div id="seesBox"></div>
+<label class="chk"><input type="checkbox" id="priv"> Anderen mogen mijn agenda niet zien</label></fieldset>
+<fieldset><legend>Persoon toevoegen</legend><label for="np">Naam van de nieuwe persoon</label>
+<input type="text" id="np" maxlength="30" autocomplete="off">
+<div class="row"><button id="npBtn" type="button">Persoon toevoegen</button></div></fieldset>
+<fieldset><legend>Persoon verwijderen</legend><label for="dp">Kies wie u wilt verwijderen</label>
+<select id="dp"></select>
+<div class="row"><button id="dpBtn" type="button">Persoon verwijderen</button></div>
+<div id="dpConf" class="row" hidden><p id="dpTxt" style="width:100%"></p><button id="dpYes" type="button"></button><button id="dpNo" type="button">Nee, annuleren</button></div></fieldset>
+<fieldset><legend>Wisselknop</legend><p>Snel wisselen naar (bijvoorbeeld als u één toestel deelt):</p><div id="swapBox"></div></fieldset>
+<fieldset><legend>Pincode (optioneel)</legend><label for="pinSet">Pincode van 4 cijfers</label><input type="password" id="pinSet" inputmode="numeric" maxlength="4" autocomplete="off"><div class="row"><button id="pinSave" type="button">Pincode opslaan</button><button id="pinClear" type="button">Pincode wissen</button></div><p id="pinState"></p></fieldset>
+<button id="klaar">Instellingen opslaan en doorgaan</button>
+</section>
+
+<button id="admBtn" aria-expanded="false" aria-controls="adm" hidden>Beheer tonen</button>
+<section id="adm" class="panel" aria-labelledby="admH" hidden>
+<h2 id="admH">Beheer</h2>
+<p>Let op: dit is een prototype zonder echte beveiliging. Met de echte database wordt dit beschermd.</p>
+<p id="admInfo"></p>
+<ul id="admList" aria-label="Personen"></ul>
+<fieldset><legend>Nieuwe persoon aanmaken</legend><label for="anp">Naam</label><input type="text" id="anp" maxlength="30" autocomplete="off"><div class="row"><button id="anpBtn" type="button">Persoon aanmaken</button></div></fieldset>
+<fieldset><legend>Back-up</legend>
+<div class="row"><button id="expBtn" type="button">Alle gegevens tonen voor back-up</button><button id="copyBtn" type="button">Kopiëren</button></div>
+<label for="expTxt">Back-uptekst (bewaar deze in een tekstbestand op uw externe schijf)</label>
+<textarea id="expTxt"></textarea>
+<div class="row"><button id="impBtn" type="button">Terugzetten uit deze tekst</button></div></fieldset>
+</section>
+<section id="spraakSec" aria-labelledby="spraakH" class="panel">
+<h2 id="spraakH">Afspraak inspreken</h2>
+<button id="mic" class="mic" aria-label="Microfoon: spreek een afspraak in">🎤 Spreek een afspraak in</button>
+<p>Zeg bijvoorbeeld: “Afspraak met de kinesist op dinsdag om veertien uur met Anna”.</p>
+<label for="typ">Of typ de zin (op een telefoon kunt u de microfoontoets van het toetsenbord gebruiken)</label>
+<input type="text" id="typ" autocomplete="off">
+<div class="row"><button id="typBtn">Verwerk zin</button></div>
+</section>
+
+<section id="agenda" aria-labelledby="titel">
+<h2 id="titel" tabindex="-1">Agenda</h2>
+<div class="row" role="group" aria-label="Weergave kiezen">
+<button data-view="dag" aria-pressed="true">Dag</button>
+<button data-view="week" aria-pressed="false">Week</button>
+<button data-view="maand" aria-pressed="false">Maand</button>
+<button data-view="jaar" aria-pressed="false">Jaar</button></div>
+<div class="row" role="group" aria-label="Navigeren">
+<button id="prev">Vorige</button><button id="today">Vandaag</button><button id="next">Volgende</button></div>
+<div class="row" role="group" aria-label="Voorlezen">
+<button id="read">🔊 Voorlezen</button><button id="stop">Stop met voorlezen</button><button id="print">🖨 Dag afdrukken</button></div>
+<div id="undoBar" class="row" role="group" aria-label="Verwijderen ongedaan maken" hidden><span id="undoTxt"></span><button id="undoBtn" type="button">Ongedaan maken</button><button id="undoNo" type="button">Sluiten</button></div>
+<ul id="list" aria-label="Overzicht"></ul>
+</section>
+
+<section id="formSec" aria-labelledby="formH">
+<h2 id="formH">Afspraak toevoegen</h2>
+<form id="f">
+<label for="fAct">Vaste activiteit kiezen</label><select id="fAct"></select>
+<label for="fT">Titel</label><input type="text" id="fT" required autocomplete="off">
+<label for="fD">Datum</label><input type="date" id="fD" required>
+<div id="snelD" class="row" role="group" aria-label="Snelkeuze datum" hidden><button type="button" data-d="0">Vandaag</button><button type="button" data-d="1">Morgen</button><button type="button" data-d="2">Overmorgen</button><button type="button" data-d="7">Over een week</button></div>
+<label for="fH">Tijd</label><input type="time" id="fH" required value="09:00">
+<div id="snelT" class="row" role="group" aria-label="Snelkeuze tijdstip" hidden></div>
+<label for="fE">Eindtijd (optioneel)</label><input type="time" id="fE">
+<label for="fR">Herhalen</label><select id="fR"><option value="">Niet herhalen</option><option value="d">Elke dag</option><option value="w">Elke week</option><option value="m">Elke maand</option></select>
+<div id="rBox" hidden><label for="fU">Herhalen tot en met</label><input type="date" id="fU"></div>
+<fieldset id="samenSet"><legend>Samen met (de afspraak komt ook in hun agenda)</legend><div id="pBox"></div></fieldset>
+<button type="submit" id="fSave">Afspraak opslaan</button><button type="button" id="fCancel" hidden>Annuleren</button>
+</form>
+</section>
+</div>
+</main>
+<div id="printArea" role="dialog" aria-modal="true" aria-labelledby="pTitel" hidden><div class="row noprint"><button id="pPrint" type="button">🖨 Afdrukken</button><button id="pClose" type="button">Sluiten</button></div><div id="pBody"></div></div>
+<script>
+const $=s=>document.querySelector(s), K='agenda-v3';
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const fromIso=s=>new Date(s+'T12:00:00');
+const addDays=(s,n)=>{const d=fromIso(s);d.setDate(d.getDate()+n);return iso(d)};
+const addMonths=(s,n)=>{const d=fromIso(s);d.setDate(1);d.setMonth(d.getMonth()+n);return iso(d)};
+const label=s=>fromIso(s).toLocaleDateString(LOC(),{weekday:'long',day:'numeric',month:'long'});
+const mlabel=s=>fromIso(s).toLocaleDateString(LOC(),{month:'long',year:'numeric'});
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function ld(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+const TODAY=()=>iso(new Date());
+const def=()=>({theme:'standaard',font:'atkinson',size:100,ui:'groot',color:'#0057d9',sees:[],priv:false,done:false,chips:false,snel:false,acts:['Huisarts','Medicijnen','Boodschappen','Sport','Bezoek']});
+/* Personen hebben een vaste id (u1, u2, ...) en een naam die u kunt wijzigen. Oude gegevens met namen als sleutel worden automatisch omgezet. */
+function migrate(d){if(!d||d.v===2)return d;const map={},users={};let i=0;
+ Object.keys(d.users||{}).forEach(n=>{const id='u'+(++i);map[n]=id;users[id]=Object.assign({},d.users[n],{name:n})});
+ const m=n=>map[n]||n;
+ Object.values(users).forEach(u=>{u.sees=(u.sees||[]).map(m).filter(x=>users[x]);if(u.swap)u.swap=u.swap.map(m).filter(x=>users[x])});
+ (d.events||[]).forEach(e=>{e.owner=m(e.owner);e.who=(e.who||[]).map(m)});
+ d.users=users;d.v=2;d.next=i+1;return d}
+let db=migrate(ld(K,null))||{v:2,next:3,users:{u1:Object.assign(def(),{name:'Danny',color:'#c2185b',done:true}),u2:Object.assign(def(),{name:'Anna',color:'#00796b',done:true,ui:'normaal'})},
+ events:[{id:'s1',title:'Huisarts',date:TODAY(),time:'10:00',owner:'u1',who:[]},{id:'s2',title:'Kinesist',date:addDays(TODAY(),1),time:'14:00',owner:'u2',who:['u1']}]};
+const uname=id=>db.users[id]?db.users[id].name:'?';
+const findByName=n=>Object.keys(db.users).find(k=>db.users[k].name.toLowerCase()===n.toLowerCase());
+function newId(){let id;do{id='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}while(db.users[id]);return id}
+/* Naam herkennen in een ingesproken zin. loose=true (Hongaars): ook met uitgang, bv. Annával. */
+function nameRe(name,loose){let s=rx(name.toLowerCase());
+ if(!loose)return new RegExp('(^| )'+s+'( |$)');
+ s=s.slice(0,-1)+s.slice(-1).replace('a','[aá]').replace('e','[eé]');
+ return new RegExp('(^| )'+s+'\\S*( |$)')}
+const localSave=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
+const save=()=>{localSave();push()};
+let me=null, view='dag', cur=TODAY();
+const S=()=>db.users[me];
+const people=e=>[e.owner].concat(e.who);
+const vis=e=>people(e).includes(me)||(people(e).some(n=>S().sees.includes(n))&&!people(e).some(n=>db.users[n]&&db.users[n].priv));
+const sorted=d=>db.events.filter(e=>e.date===d&&vis(e)).sort((a,b)=>a.time.localeCompare(b.time));
+const inRange=p=>db.events.filter(e=>vis(e)&&e.date.startsWith(p)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+const spokenTime=t=>{const[h,m]=t.split(':').map(Number),u=LANGS[LANG].h;return m?h+' '+u+' '+m:h+' '+u};
+const names=e=>{const p=people(e).map(uname);return p.length>1?p.slice(0,-1).join(', ')+LANGS[LANG].and+p[p.length-1]:p[0]};
+const colorOf=n=>(db.users[n]&&/^#[0-9a-f]{6}$/i.test(db.users[n].color))?db.users[n].color:'#888888';
+
+/* Inloggen */
+function showLogin(){
+ me=null;$('#app').hidden=true;$('#login').hidden=false;$('#logout').hidden=true;$('#wissel').hidden=true;$('#pinBox').hidden=true;$('#undoBar').hidden=true;$('#wie').textContent='';
+ const R=document.documentElement;R.dataset.theme='standaard';R.dataset.font='atkinson';R.dataset.ui='groot';R.dataset.hide='';R.dataset.lay='';R.style.fontSize='100%';
+ $('#users').innerHTML=Object.keys(db.users).map(n=>`<li><button data-login="${esc(n)}" style="border-color:${colorOf(n)};border-width:.4rem" aria-label="Inloggen als ${esc(uname(n))}">${esc(uname(n))}</button></li>`).join('');
+}
+function login(n){
+ me=n;LANG=S().lang||LANG;fillLang();endEdit();undoList=null;$('#undoBar').hidden=true;$('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;
+ $('#wie').textContent='Ingelogd als '+uname(n);
+ cur=TODAY();apply();renderSettings();renderForm();render();hpush();
+ if(!S().done&&!(S().hide||[]).includes('inst')){openInst(true);$('#welkom').textContent='Welkom '+uname(n)+'. Stel uw instellingen eenmalig in. U kunt ze later altijd wijzigen.';say('Welkom '+uname(n)+'. Stel uw instellingen in.')}
+ else{$('#welkom').textContent='';say('Ingelogd als '+uname(n)+'.');$('#titel').focus()}
+}
+$('#users').onclick=e=>{const b=e.target.closest('[data-login]');if(b)login(b.dataset.login)};
+$('#nf').onsubmit=e=>{e.preventDefault();const n=$('#nn').value.trim();if(!n)return;
+ let id=findByName(n);if(!id){id=newId();db.users[id]=mkUser(n);save()}login(id);e.target.reset()};
+/* Terugknop van de telefoon: stap voor stap terug door de weergaven, en vanaf de eerste pagina terug naar 'Wie bent u?' */
+let hd=0;
+function hpush(){try{hd++;history.pushState({app:true,view,cur,d:hd},'')}catch(e){}}
+try{history.replaceState({app:false,d:0},'')}catch(e){}
+window.addEventListener('popstate',e=>{const st=e.state;hd=(st&&st.d)||0;
+ if(!st||!st.app){if(me){endEdit();showLogin();say('Teruggegaan naar de keuze van de gebruiker.');$('#loginH').focus()}return}
+ if(me){endEdit();view=st.view||'dag';cur=st.cur||TODAY();render();say($('#titel').textContent)}});
+$('#logout').onclick=()=>{speechSynthesis&&speechSynthesis.cancel();const back=hd;showLogin();say('Uitgelogd.');$('#loginH').focus();if(back>0){try{history.go(-back)}catch(e){}}};
+
+/* Instellingen per gebruiker */
+function apply(){const s=S(),R=document.documentElement,hide=isAdmin()?[]:(s.hide||[]);R.dataset.theme=s.theme;R.dataset.font=s.font;R.dataset.ui=s.ui;R.style.fontSize=Math.max(s.size,s.ui==='normaal'?70:100)+'%';
+ R.dataset.hide=hide.join(' ');R.dataset.lay=s.lay||'';if(hide.includes('weergaven')&&view!=='dag')view='dag';
+ const f=$('#formSec'),ag=$('#agenda');if(s.lay==='form')ag.before(f);else ag.after(f)}
+const SZ=[70,85,100,125,150,175,200,225,250,275,300];
+function renderSettings(){
+ const s=S();
+ document.querySelectorAll('[data-theme-btn]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.themeBtn===s.theme));
+ document.querySelectorAll('[data-font-btn]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fontBtn===s.font));
+ document.querySelectorAll('[data-ui-btn]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.uiBtn===s.ui));
+ document.querySelectorAll('[data-chips-btn]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.chipsBtn===(s.chips?'ja':'nee')));
+ $('#sz').textContent='Tekstgrootte: '+s.size+' procent';
+ $('#plus').setAttribute('aria-disabled',s.size>=300);$('#minus').setAttribute('aria-disabled',s.size<=(s.ui==='normaal'?70:100));
+ $('#kleur').value=colorOf(me);$('#priv').checked=s.priv;renderActs();renderAdm();renderSwap();
+ $('#dp').innerHTML=Object.keys(db.users).map(n=>`<option value="${esc(n)}">${esc(uname(n))}${n===me?' (uzelf)':''}</option>`).join('');$('#dpConf').hidden=true;
+ const o=Object.keys(db.users).filter(n=>n!==me);
+ $('#seesBox').innerHTML=o.length?o.map(n=>`<label class="chk"><input type="checkbox" data-sees="${esc(n)}" ${s.sees.includes(n)?'checked':''}> ${esc(uname(n))}${db.users[n].priv?' <small>(agenda is privé)</small>':''}${(db.users[n].sees||[]).includes(me)&&!s.priv?' <small>(ziet ook uw agenda)</small>':''}</label>`).join(''):'<p>Er zijn nog geen andere gebruikers.</p>';
+}
+function change(fn,msg){fn(S());save();apply();renderSettings();render();say(msg)}
+document.querySelectorAll('[data-theme-btn]').forEach(b=>b.onclick=()=>change(s=>s.theme=b.dataset.themeBtn,'Thema: '+b.textContent));
+document.querySelectorAll('[data-font-btn]').forEach(b=>b.onclick=()=>change(s=>s.font=b.dataset.fontBtn,'Lettertype: '+b.textContent));
+document.querySelectorAll('[data-ui-btn]').forEach(b=>b.onclick=()=>change(s=>{s.ui=b.dataset.uiBtn;s.snel=s.ui==='normaal'},'Soort agenda: '+b.textContent));
+document.querySelectorAll('[data-chips-btn]').forEach(b=>b.onclick=()=>change(s=>s.chips=b.dataset.chipsBtn==='ja','Maandoverzicht: '+b.textContent));
+$('#plus').onclick=()=>{const n=SZ.find(x=>x>S().size);if(n)change(s=>s.size=n,'Tekst groter.')};
+$('#minus').onclick=()=>{const m=S().ui==='normaal'?70:100,n=[...SZ].reverse().find(x=>x<S().size&&x>=m);if(n)change(s=>s.size=n,'Tekst kleiner.')};
+$('#kleur').onchange=e=>change(s=>s.color=e.target.value,'Kleur opgeslagen.');
+$('#priv').onchange=e=>change(s=>s.priv=e.target.checked,e.target.checked?'Uw agenda is nu privé.':'Anderen mogen uw agenda zien.');
+$('#seesBox').onchange=e=>{const n=e.target.dataset.sees;if(!n)return;
+ change(s=>{s.sees=s.sees.filter(x=>x!==n);if(e.target.checked)s.sees.push(n)},e.target.checked?'U ziet nu ook de agenda van '+uname(n)+'.':'U ziet de agenda van '+uname(n)+' niet meer.')};
+function openInst(o){$('#inst').hidden=!o;$('#instBtn').setAttribute('aria-expanded',o);$('#instBtn').textContent=o?'Instellingen verbergen':'Instellingen tonen'}
+$('#instBtn').onclick=()=>openInst($('#inst').hidden);
+const ACT=()=>S().acts||(S().acts=['Huisarts','Medicijnen','Boodschappen','Sport','Bezoek']);
+function markT(){document.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===$('#fH').value))}
+function renderActs(){const s=S();
+ document.querySelectorAll('[data-snel-btn]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.snelBtn===(s.snel?'ja':'nee')));
+ $('#actBox').innerHTML=ACT().map((a,i)=>`<li class="row"><span>${esc(a)}</span><button type="button" data-delact="${i}" aria-label="Verwijder activiteit ${esc(a)}">Verwijderen</button></li>`).join('');
+ $('#fAct').innerHTML='<option value="">Zelf typen</option>'+ACT().map(a=>`<option>${esc(a)}</option>`).join('');
+ $('#snelD').hidden=$('#snelT').hidden=!s.snel;
+ if(s.snel&&!$('#snelT').children.length)$('#snelT').innerHTML=[...Array(14).keys()].map(i=>`<button type="button" data-t="${pad(i+7)}:00" aria-pressed="false">${pad(i+7)}:00</button>`).join('');
+ markT()}
+document.querySelectorAll('[data-snel-btn]').forEach(b=>b.onclick=()=>change(s=>s.snel=b.dataset.snelBtn==='ja','Snelkeuze: '+b.textContent));
+function addAct(){const a=$('#na').value.trim();if(!a){say('Typ eerst een activiteit.');$('#na').focus();return}
+ if(ACT().some(x=>x.toLowerCase()===a.toLowerCase())){say(a+' staat er al.');return}
+ change(s=>s.acts.push(a),a+' is toegevoegd aan uw vaste activiteiten.');$('#na').value='';$('#na').focus()}
+$('#naBtn').onclick=addAct;$('#na').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addAct()}};
+$('#actBox').onclick=e=>{const b=e.target.closest('[data-delact]');if(!b)return;const a=ACT()[+b.dataset.delact];change(s=>s.acts.splice(+b.dataset.delact,1),a+' is verwijderd.');$('#na').focus()};
+$('#snelD').onclick=e=>{const b=e.target.closest('[data-d]');if(b){$('#fD').value=addDays(TODAY(),+b.dataset.d);say('Datum: '+label($('#fD').value))}};
+$('#snelT').onclick=e=>{const b=e.target.closest('[data-t]');if(b){$('#fH').value=b.dataset.t;markT();say('Tijd: '+b.dataset.t)}};
+$('#fH').oninput=markT;
+$('#fAct').onchange=e=>{if(e.target.value){$('#fT').value=e.target.value;say('Activiteit: '+e.target.value)}};
+$('#fR').onchange=e=>{$('#rBox').hidden=!e.target.value;if(e.target.value&&!$('#fU').value)$('#fU').value=nextOcc($('#fD').value||cur,'m',3)};
+function nextOcc(b,rep,k){const d=fromIso(b);
+ if(rep==='d')d.setDate(d.getDate()+k);else if(rep==='w')d.setDate(d.getDate()+7*k);
+ else{const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+k);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}
+ return iso(d)}
+function addSeries(base,rep,end){const sid='r'+Date.now(),out=[];
+ for(let k=0;out.length<200;k++){const d=nextOcc(base.date,rep,k);if(d>end)break;out.push(Object.assign({id:sid+'_'+k,owner:me,series:sid},base,{date:d,who:base.who.slice()}))}
+ db.events=db.events.concat(out);save();cur=base.date;renderForm();render();
+ say(`${out.length} afspraken toegevoegd: ${base.title}, ${{d:'elke dag',w:'elke week',m:'elke maand'}[rep]}, vanaf ${label(base.date)}.`)}
+function mkUser(name){const pal=['#c2185b','#00796b','#e65100','#6a1b9a','#2e7d32','#0277bd','#ad1457','#827717'],used=Object.keys(db.users).map(n=>colorOf(n).toLowerCase());
+ return Object.assign(def(),{name,color:pal.find(c=>!used.includes(c))||'#0057d9'})}
+function addPerson(){
+ const n=$('#np').value.trim();
+ if(!n){say('Typ eerst een naam.');$('#np').focus();return}
+ const ex=findByName(n);
+ if(ex){say(uname(ex)+' bestaat al.');$('#np').focus();return}
+ const nid=newId();db.users[nid]=mkUser(n);S().sees.push(nid);save();$('#np').value='';renderSettings();renderForm();render();
+ say(n+' is toegevoegd en u ziet nu ook de agenda van '+n+'. Deze persoon stelt de eigen instellingen in bij het eerste inloggen.');$('#np').focus()}
+$('#npBtn').onclick=addPerson;
+let delN=null;
+$('#dpNo').onclick=()=>{$('#dpConf').hidden=true;say('Verwijderen geannuleerd.');$('#dpBtn').focus()};
+$('#dpYes').onclick=()=>{const n=delN;if(!n||!db.users[n])return;const nn=uname(n);
+ db.events=db.events.filter(e=>{if(e.owner!==n)return true;if(e.who.length){e.owner=e.who[0];e.who=e.who.slice(1);return true}return false});
+ db.events.forEach(e=>{e.who=e.who.filter(x=>x!==n)});
+ delete db.users[n];Object.values(db.users).forEach(u=>{u.sees=u.sees.filter(x=>x!==n)});save();delN=null;
+ if(n===me){showLogin();say(nn+' is verwijderd en u bent uitgelogd.');$('#loginH').focus();return}
+ renderSettings();renderForm();render();say(nn+' is verwijderd.');$('#dp').focus()};
+$('#np').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addPerson()}};
+$('#klaar').onclick=()=>{S().done=true;save();openInst(false);$('#welkom').textContent='';say('Instellingen opgeslagen.');$('#titel').focus()};
+
+/* Weergaven */
+function chipHtml(ev){
+ if(!ev.length)return isGrid()?'':'Geen';
+ return '<span class="chips" aria-hidden="true">'+ev.slice(0,4).map(e=>`<span class="chip" style="border-color:${colorOf(e.owner)}">${people(e).map(n=>`<span class="sw" style="background:${colorOf(n)}"></span>`).join('')}${e.time}</span>`).join('')+(ev.length>4?`<span class="chip">+${ev.length-4}</span>`:'')+'</span>'}
+function item(e){
+ const aria=`${e.title}, ${e.date===cur||view==='dag'?'':label(e.date)+', '}om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}, met ${names(e)}`;
+ return `<li class="item${S().chips?' blok':''}" role="group" tabindex="0" style="${S().chips?'border-color':'border-left-color'}:${colorOf(e.owner)}" aria-label="${esc(aria)}">
+ <div><span class="t">${e.time}${e.end?'–'+e.end:''}</span><br><strong>${esc(e.title)}</strong><br>${people(e).map(n=>`<span class="sw" style="background:${colorOf(n)}"></span> ${esc(uname(n))}`).join(' ')}${e.who.length?'<span> (samen)</span>':''}</div>
+ ${people(e).includes(me)?`<button data-edit="${e.id}" aria-label="Wijzig afspraak ${esc(e.title)} om ${spokenTime(e.time)}">Wijzigen</button><button data-del="${e.id}" aria-label="Verwijder afspraak ${esc(e.title)} om ${spokenTime(e.time)}">Verwijderen</button>${e.series?`<button data-delser="${e.series}" aria-label="Verwijder alle afspraken van de reeks ${esc(e.title)}">Hele reeks</button>`:''}`:''}</li>`}
+function render(){
+ if(!me)return;
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===view));$('#print').hidden=view!=='dag';
+ let h='';const L=$('#list');L.className=(view==='maand'||view==='jaar')?'grid':'';
+ if(view==='dag'){
+  $('#titel').textContent='Dag: '+label(cur);const l=sorted(cur);
+  h=l.length?l.map(item).join(''):'<li class="item" tabindex="0">Geen afspraken op deze dag.</li>';
+ }else if(view==='week'){
+  const mon=addDays(cur,-((fromIso(cur).getDay()+6)%7));$('#titel').textContent='Week van '+label(mon);
+  for(let i=0;i<7;i++){const day=addDays(mon,i),l=sorted(day);
+   const isT=day===TODAY();h+=`<li class="dag"><h3${isT?' aria-current="date"':''}>${esc(label(day))}${isT?' – vandaag':''}</h3><button data-go="${day}" aria-label="Open dagweergave van ${esc(label(day))}">Open deze dag</button> <button data-print="${day}" aria-label="Druk de afspraken van ${esc(label(day))} af">Afdrukken</button><ul class="${S().chips?'blokken':''}">${l.length?l.map(item).join(''):'<li>Geen afspraken.</li>'}</ul></li>`}
+ }else if(view==='maand'){
+  const d=fromIso(cur),y=d.getFullYear(),m=d.getMonth(),n=new Date(y,m+1,0).getDate();
+  $('#titel').textContent='Maand: '+mlabel(cur);
+  const cal=isGrid();if(cal){L.className='cal';h+=[1,2,3,4,5,6,0].map(i=>new Date(2024,0,7+i).toLocaleDateString(LOC(),{weekday:'short'})).map(x=>`<li class="wdn" aria-hidden="true">${x}</li>`).join('')+'<li aria-hidden="true"></li>'.repeat((new Date(y,m,1).getDay()+6)%7)}
+  for(let i=1;i<=n;i++){const day=iso(new Date(y,m,i)),ev=sorted(day),c=ev.length,wd=fromIso(day).toLocaleDateString(LOC(),{weekday:'short'});
+   const isT=day===TODAY();h+=`<li><button data-go="${day}"${isT?' class="vandaag" aria-current="date"':''} aria-label="${isT?'Vandaag: ':''}${esc(label(day))}, ${c?c+(c>1?' afspraken':' afspraak')+': '+esc(ev.map(e=>spokenTime(e.time)+' '+e.title+T(' met ')+names(e)).join('; ')):'geen afspraken'}"><b>${isT?'▶ ':''}${cal?i:wd+' '+i}${isT&&!cal?' (vandaag)':''}</b><br>${S().chips?chipHtml(ev):(cal?(c?'● '+c:''):(c?c+(c>1?' afspraken':' afspraak'):'Geen'))}</button></li>`}
+ }else{
+  const y=fromIso(cur).getFullYear();$('#titel').textContent='Jaar: '+y;
+  for(let m=0;m<12;m++){const first=iso(new Date(y,m,1)),c=inRange(y+'-'+pad(m+1)).length;
+   const isM=first.slice(0,7)===TODAY().slice(0,7);h+=`<li><button data-month="${first}"${isM?' class="vandaag" aria-current="date"':''} aria-label="${isM?'Huidige maand: ':''}${esc(mlabel(first))}, ${c?c+(c>1?' afspraken':' afspraak'):'geen afspraken'}"><b>${esc(fromIso(first).toLocaleDateString(LOC(),{month:'long'}))}</b><br>${c?c+(c>1?' afspraken':' afspraak'):'Geen'}</button></li>`}
+ }
+ L.innerHTML=h;
+}
+function renderForm(){const o=Object.keys(db.users).filter(n=>n!==me);
+ $('#pBox').innerHTML=o.length?o.map(n=>`<label class="chk"><input type="checkbox" name="p" value="${esc(n)}"> ${esc(uname(n))}</label>`).join(''):'<p>Nog geen andere gebruikers.</p>';
+ $('#fD').value=cur}
+const steps={dag:d=>addDays(cur,d),week:d=>addDays(cur,7*d),maand:d=>addMonths(cur,d),jaar:d=>addMonths(cur,12*d)};
+$('#prev').onclick=()=>{cur=steps[view](-1);render();say($('#titel').textContent)};
+$('#next').onclick=()=>{cur=steps[view](1);render();say($('#titel').textContent)};
+$('#today').onclick=()=>{cur=TODAY();render();say($('#titel').textContent)};
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;render();hpush();say(b.textContent+'weergave actief. '+$('#titel').textContent)});
+$('#list').onclick=e=>{
+ const d=e.target.closest('[data-del]'),g=e.target.closest('[data-go]'),m=e.target.closest('[data-month]'),p=e.target.closest('[data-print]'),ds=e.target.closest('[data-delser]'),ed=e.target.closest('[data-edit]');
+ if(ed)startEdit(ed.dataset.edit);
+ if(d){const gone=db.events.filter(x=>x.id===d.dataset.del);db.events=db.events.filter(x=>x.id!==d.dataset.del);save();render();askUndo(gone)}
+ if(g){cur=g.dataset.go;view='dag';render();hpush();say($('#titel').textContent);$('#titel').focus()}
+ if(ds){const gone=db.events.filter(x=>x.series===ds.dataset.delser);db.events=db.events.filter(x=>x.series!==ds.dataset.delser);save();render();askUndo(gone,true)}
+ if(p)printDay(p.dataset.print);
+ if(m){cur=m.dataset.month;view='maand';render();hpush();say($('#titel').textContent);$('#titel').focus()}};
+
+/* Afspraken toevoegen */
+function addEv(ev,loud){
+ db.events.push(Object.assign({id:Date.now()+Math.random().toString(36).slice(2),owner:me},ev));
+ save();cur=ev.date;if(view==='jaar')view='dag';renderForm();render();
+ const m=`Afspraak toegevoegd: ${ev.title}, ${label(ev.date)} om ${spokenTime(ev.time)}.`;say(m);if(loud)speak(m)}
+$('#f').onsubmit=e=>{e.preventDefault();
+ const who=[...document.querySelectorAll('input[name=p]:checked')].map(c=>c.value);
+ const rep=$('#fR').value,base={title:$('#fT').value.trim(),date:$('#fD').value,time:$('#fH').value,who,end:$('#fE').value||''};if(base.end&&base.end<=base.time){say('De eindtijd moet na de begintijd liggen.');$('#fE').focus();return}
+ if(editId)saveEdit(base);else if(rep)addSeries(base,rep,$('#fU').value||nextOcc(base.date,'m',3));else addEv(base,false);
+ e.target.reset();$('#fD').value=cur;$('#fH').value='09:00';$('#rBox').hidden=true;markT();$('#titel').focus()};
+
+/* Afdrukken per dag */
+function printDay(d){
+ const l=sorted(d);
+ $('#pBody').innerHTML=`<h1 id="pTitel">Afspraken op ${esc(label(d))}</h1>`+(l.length?l.map(e=>`<div class="pi"><span class="t">${e.time}${e.end?'–'+e.end:''}</span> &ndash; <strong>${esc(e.title)}</strong><br>Met: ${esc(names(e))}</div>`).join(''):'<p>Geen afspraken.</p>');
+ say('Afdrukweergave voor '+label(d)+' geopend. Kies Afdrukken of Sluiten.');$('#printArea').hidden=false;document.body.classList.add('pr');$('#pPrint').focus();
+ }
+function doPrint(){try{window.print()}catch(e){say('Afdrukken lukt hier niet. Gebruik het afdrukken of delen van uw browser, of open de agenda in een eigen tabblad.')}}
+function closePrint(){$('#printArea').hidden=true;document.body.classList.remove('pr');say('Afdrukweergave gesloten.');$('#print').focus()}
+$('#pPrint').onclick=doPrint;$('#pClose').onclick=closePrint;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#printArea').hidden)closePrint()});
+$('#print').onclick=()=>printDay(cur);
+/* Voorlezen */
+$('#stop').onclick=()=>{if('speechSynthesis' in window)speechSynthesis.cancel();say('Voorlezen gestopt.')};
+
+/* Nederlandse zin ontleden */
+const NUM={nul:0,een:1,'één':1,twee:2,drie:3,vier:4,vijf:5,zes:6,zeven:7,acht:8,negen:9,tien:10,elf:11,twaalf:12,dertien:13,veertien:14,vijftien:15,zestien:16,zeventien:17,achttien:18,negentien:19,twintig:20,eenentwintig:21,'tweeëntwintig':22,'drieëntwintig':23};
+const num=w=>/^\d+$/.test(w)?+w:NUM[w];
+const DAGEN=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+function parseNL(text){
+ let t=' '+text.toLowerCase().replace(/[’‘´]/g,"'").replace(/[.,!?]/g,' ')+' ',date=null,time=null,m;
+ if(/ overmorgen /.test(t)){date=addDays(TODAY(),2);t=t.replace(' overmorgen ',' ')}
+ else if(/ morgen /.test(t)){date=addDays(TODAY(),1);t=t.replace(' morgen ',' ')}
+ else if(/ vandaag /.test(t)){date=TODAY();t=t.replace(' vandaag ',' ')}
+ else DAGEN.forEach((dn,i)=>{if(!date&&t.includes(' '+dn+' ')){date=addDays(TODAY(),(i-new Date().getDay()+7)%7||7);t=t.replace(' '+dn+' ',' ')}});
+ const pm=/middag|avond/.test(t),am=/ochtend|morgens|nacht/.test(t),fix=h=>(pm&&h<12)?h+12:(!am&&h>=1&&h<=6)?h+12:h;
+ if(m=t.match(/(\d{1,2})[:.](\d{2})/)){time=pad(fix(+m[1]))+':'+m[2];t=t.replace(m[0],' ')}
+ else if((m=t.match(/half (\S+)/))&&num(m[1])!=null){time=pad(fix(num(m[1])-1))+':30';t=t.replace(m[0],' ')}
+ else if((m=t.match(/(\S+) uur/))&&num(m[1])!=null){time=pad(fix(num(m[1])))+':00';t=t.replace(m[0],' ')}
+ t=t.replace(/ ('s |s )?(middags|avonds|ochtends|morgens|namiddags)/g,' ').replace(/ (om|op|voor|rond) /g,' ').replace(/ (om|op) /g,' ');
+ const who=[];
+ Object.keys(db.users).forEach(n=>{if(n===me)return;const re=nameRe(uname(n),false);if(re.test(t)){who.push(n);t=t.replace(re,' ')}});
+ let title=t.replace(/\s+/g,' ').trim().replace(/( en| met)$/,'').trim();
+ return{title:title.charAt(0).toUpperCase()+title.slice(1),date,time,who}}
+function handle(text){const r=parse(text);
+ if(r.date&&r.time&&r.title){addEv({title:r.title,date:r.date,time:r.time,who:r.who},true);return}
+ $('#fT').value=r.title;if(r.date)$('#fD').value=r.date;if(r.time)$('#fH').value=r.time;
+ r.who.forEach(n=>{const c=[...document.querySelectorAll('input[name=p]')].find(x=>x.value===n);if(c)c.checked=true});
+ const m='Ik heb de datum of tijd niet goed verstaan. Controleer het formulier hieronder en sla de afspraak op.';
+ say(m);speak(m);$('#fT').focus()}
+$('#typBtn').onclick=()=>{const v=$('#typ').value.trim();if(v){handle(v);$('#typ').value=''}};
+$('#typ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#typBtn').click()}};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('#mic').onclick=()=>{
+ if(!SR){say('Spraakherkenning wordt door deze browser niet ondersteund. Typ de zin in het tekstveld, of gebruik Chrome of Safari.');return}
+ const r=new SR();r.lang=LANGS[LANG].sr;r.interimResults=false;r.maxAlternatives=1;
+ r.onstart=()=>say('Ik luister. Spreek nu uw afspraak in.');
+ r.onresult=e=>{const t=e.results[0][0].transcript;say('Verstaan: '+t);handle(t)};
+ r.onerror=e=>{const m={'not-allowed':'De microfoon is geblokkeerd. Sta de microfoon toe in uw browser, of open de agenda in een eigen tabblad van Chrome of Safari.','service-not-allowed':'Spraakherkenning is in deze weergave niet toegestaan. Open de agenda in een eigen browsertabblad.','no-speech':'Ik heb niets gehoord. Probeer het opnieuw.','network':'Spraakherkenning heeft internet nodig.','audio-capture':'Er is geen microfoon gevonden.'}[e.error]||('Spraakherkenning mislukt: '+e.error+'.');say(m+' U kunt de zin ook typen, of de microfoontoets van uw toetsenbord gebruiken.');$('#typ').focus()};
+ try{r.start()}catch(e){say('Kon de microfoon niet starten.')}};
+
+/* Live synchronisatie tussen tabbladen */
+window.addEventListener('storage',e=>{if(e.key!==K)return;db=migrate(ld(K,db));
+ if(me&&!db.users[me]){showLogin();return}
+ if(me){apply();renderSettings();renderForm();render();say('De agenda is bijgewerkt door een andere gebruiker.')}else showLogin()});
+/* ===== Talen: nieuwe taal = nieuw object in LANGS (d: Nederlands -> vertaling) ===== */
+const LANGS={nl:{name:'Nederlands',code:'nl',loc:'nl-NL',sr:'nl-NL',h:'uur',and:' en ',d:{}},
+hu:{name:'Magyar',code:'hu',loc:'hu-HU',sr:'hu-HU',h:'óra',and:' és ',
+p:{tod:'ma',tom:'holnap',dat:'holnapután',days:['vasárnap','hétfő','kedd','szerd','csütörtök','péntek','szombat'],half:'fél',hr:/(\S+) ó(?:ra|rakor)/,pm:/délután|este/,junk:/(^| )(és|-?kor|-?val|-?vel)( |$)/g,
+num:{egy:1,kettő:2,két:2,három:3,négy:4,öt:5,hat:6,hét:7,nyolc:8,kilenc:9,tíz:10,tizenegy:11,tizenkettő:12,tizenhárom:13,tizennégy:14,tizenöt:15,tizenhat:16,tizenhét:17,tizennyolc:18,tizenkilenc:19,húsz:20,huszonegy:21,huszonkettő:22,huszonhárom:23}},
+d:{
+'Toegankelijke gedeelde agenda':'Akadálymentes közös naptár','Ga direct naar de inhoud':'Ugrás a tartalomhoz','Gedeelde agenda':'Közös naptár','Uitloggen':'Kijelentkezés','Wie bent u?':'Ki Ön?','Gebruikers':'Felhasználók',
+'Nieuwe gebruiker: typ uw naam':'Új felhasználó: írja be a nevét','Aanmaken en inloggen':'Létrehozás és bejelentkezés','Dit is een prototype: er is nog geen wachtwoord.':'Ez egy prototípus: még nincs jelszó.',
+'Instellingen tonen':'Beállítások megjelenítése','Instellingen verbergen':'Beállítások elrejtése','Mijn instellingen':'Saját beállításaim','Soort agenda':'A naptár típusa',
+'Grote knoppen (slechtziend of blind)':'Nagy gombok (gyengénlátó vagy vak)','Gewone agenda: compact, voor goedzienden':'Hagyományos naptár: kompakt, látók számára','Contrastthema':'Kontrasztos téma',
+'Standaard: zwart op wit':'Alapértelmezett: fekete fehéren','Donker: wit op zwart':'Sötét: fehér feketén','Zwart met gele letters':'Fekete alapon sárga betűk','Blauw met gele letters':'Kék alapon sárga betűk','Blauw met witte letters':'Kék alapon fehér betűk',
+'Lettertype':'Betűtípus','Atkinson of Arial':'Atkinson vagy Arial','Lettergrootte':'Betűméret','Tekst kleiner':'Kisebb szöveg','Tekst groter':'Nagyobb szöveg','Mijn kleur':'Saját színem','Kies een kleur':'Válasszon színt',
+'Uw afspraken tonen deze kleur, én altijd uw naam.':'Az Ön időpontjai ezzel a színnel jelennek meg, és mindig a nevével együtt.','Overzicht van dag, week en maand':'Nap-, hét- és hónapnézet','Lijst met details':'Részletes lista','Kadertjes met kleur en uur':'Színes keretek az időponttal',
+'Snelkeuze bij een nieuwe afspraak':'Gyorsválasztás új időpontnál','Knoppen voor datum en tijd tonen':'Dátum- és időgombok megjelenítése','Niet tonen':'Ne jelenjenek meg','Mijn vaste activiteiten (keuzemenu)':'Saját állandó tevékenységeim (választómenü)',
+'Nieuwe activiteit':'Új tevékenység','Activiteit toevoegen':'Tevékenység hozzáadása','Agenda’s van anderen die ik ook wil zien':'Mások naptárai, amelyeket szintén látni szeretnék','Anderen mogen mijn agenda niet zien':'Mások nem láthatják a naptáramat',
+'Persoon toevoegen':'Személy hozzáadása','Naam van de nieuwe persoon':'Az új személy neve','Persoon verwijderen':'Személy törlése','Kies wie u wilt verwijderen':'Válassza ki, kit szeretne törölni','Nee, annuleren':'Nem, mégsem','Instellingen opslaan en doorgaan':'Beállítások mentése és tovább',
+'Afspraak inspreken':'Időpont bemondása','🎤 Spreek een afspraak in':'🎤 Mondjon be egy időpontot','Microfoon: spreek een afspraak in':'Mikrofon: mondjon be egy időpontot',
+'Zeg bijvoorbeeld: “Afspraak met de kinesist op dinsdag om veertien uur met Anna”.':'Mondja például: „Időpont a gyógytornásznál kedden délután két órakor Annával”.',
+'Of typ de zin (op een telefoon kunt u de microfoontoets van het toetsenbord gebruiken)':'Vagy írja be a mondatot (telefonon használhatja a billentyűzet mikrofon gombját)','Verwerk zin':'Mondat feldolgozása',
+'Agenda':'Naptár','Weergave kiezen':'Nézet kiválasztása','Dag':'Nap','Week':'Hét','Maand':'Hónap','Jaar':'Év','Navigeren':'Navigáció','Vorige':'Előző','Vandaag':'Ma','Volgende':'Következő',
+'Voorlezen':'Felolvasás','🔊 Voorlezen':'🔊 Felolvasás','Stop met voorlezen':'Felolvasás leállítása','🖨 Dag afdrukken':'🖨 Nap nyomtatása','Overzicht':'Áttekintés',
+'Afspraak toevoegen':'Időpont hozzáadása','Vaste activiteit kiezen':'Állandó tevékenység kiválasztása','Titel':'Cím','Datum':'Dátum','Tijd':'Idő','Snelkeuze datum':'Gyorsválasztás: dátum','Morgen':'Holnap','Overmorgen':'Holnapután','Over een week':'Egy hét múlva','Snelkeuze tijdstip':'Gyorsválasztás: időpont',
+'Herhalen':'Ismétlés','Niet herhalen':'Nincs ismétlés','Elke dag':'Minden nap','Elke week':'Minden héten','Elke maand':'Minden hónapban','Herhalen tot en met':'Ismétlés eddig (ezt a napot is beleértve)',
+'Samen met (de afspraak komt ook in hun agenda)':'Együtt velük (az időpont az ő naptárukban is megjelenik)','Afspraak opslaan':'Időpont mentése','Nog geen andere gebruikers.':'Még nincs más felhasználó.','Er zijn nog geen andere gebruikers.':'Még nincs más felhasználó.',
+'🖨 Afdrukken':'🖨 Nyomtatás','Sluiten':'Bezárás','Afdrukken':'Nyomtatás','Zelf typen':'Saját szöveg','Verwijderen':'Törlés','(ziet ook uw agenda)':'(ő is látja az Ön naptárát)','(agenda is privé)':'(a naptár privát)','Beheer tonen':'Kezelés megjelenítése','Beheer verbergen':'Kezelés elrejtése','Beheer':'Kezelés','Personen':'Személyek','Beheerder':'Adminisztrátor','Agenda is privé':'A naptár privát','Agenda’s die {0} ziet':'{0} által látott naptárak','Nog geen andere personen.':'Még nincs más személy.','Verwijder persoon {0}':'Személy törlése: {0}','Nieuwe persoon aanmaken':'Új személy létrehozása','Naam':'Név','Persoon aanmaken':'Személy létrehozása','Back-up':'Biztonsági mentés','Alle gegevens tonen voor back-up':'Összes adat megjelenítése mentéshez','Kopiëren':'Másolás','Back-uptekst (bewaar deze in een tekstbestand op uw externe schijf)':'Mentési szöveg (mentse szövegfájlba a külső meghajtóra)','Terugzetten uit deze tekst':'Visszaállítás ebből a szövegből','U bent beheerder.':'Ön adminisztrátor.','Er is nog geen beheerder. Vink bij uzelf “Beheerder” aan.':'Még nincs adminisztrátor. Jelölje be magánál az „Adminisztrátor” jelölőnégyzetet.','Let op: dit is een prototype zonder echte beveiliging. Met de echte database wordt dit beschermd.':'Figyelem: ez prototípus, valódi védelem nélkül. A valódi adatbázissal ez védett lesz.','Instelling opgeslagen voor {0}.':'Beállítás elmentve: {0}.','{0} is aangemaakt.':'{0} létrehozva.','De back-up staat in het tekstveld. Kopieer de tekst en bewaar ze op uw externe schijf.':'A mentés a szövegmezőben van. Másolja ki a szöveget, és mentse a külső meghajtóra.','Gekopieerd.':'Kimásolva.','Kopiëren is hier niet gelukt. De tekst is geselecteerd; kopieer met Ctrl+C of via het menu van uw telefoon.':'A másolás itt nem sikerült. A szöveg ki van jelölve; másolja Ctrl+C-vel vagy a telefon menüjével.','Dit is geen geldige back-up.':'Ez nem érvényes mentés.','Weet u het zeker? Alle huidige gegevens worden vervangen. Kies nogmaals Terugzetten om te bevestigen.':'Biztos benne? Az összes jelenlegi adat lecserélődik. A megerősítéshez válassza újra a Visszaállítás gombot.','De back-up is teruggezet.':'A mentés visszaállítva.','Wisselknop':'Váltógomb','Snel wisselen naar (bijvoorbeeld als u één toestel deelt):':'Gyors váltás erre (például ha egy eszközt megosztanak):','Pincode (optioneel)':'PIN-kód (nem kötelező)','Pincode van 4 cijfers':'4 számjegyű PIN-kód','Pincode opslaan':'PIN-kód mentése','Pincode wissen':'PIN-kód törlése','Er is een pincode ingesteld.':'Van beállított PIN-kód.','Er is geen pincode ingesteld.':'Nincs beállított PIN-kód.','Snel wisselen':'Gyors váltás','Wissel naar {0}':'Váltás erre: {0}','Pincode van':'PIN-kód:','Bevestigen':'Megerősítés','Annuleren':'Mégsem','Voer de pincode van {0} in.':'Adja meg {0} PIN-kódját.','De pincode klopt niet.':'A PIN-kód nem helyes.','Wisselen geannuleerd.':'A váltás megszakítva.','Een pincode bestaat uit 4 cijfers.':'A PIN-kód 4 számjegyből áll.','Pincode opgeslagen.':'PIN-kód elmentve.','Pincode gewist.':'PIN-kód törölve.','De wisselknop voor {0} staat aan.':'{0} váltógombja be van kapcsolva.','De wisselknop voor {0} staat uit.':'{0} váltógombja ki van kapcsolva.','Vereenvoudigen voor {0}':'Egyszerűsítés: {0}','Afspraak toevoegen bovenaan':'Időpont hozzáadása felül','Samen met':'Együtt velük','Eindtijd':'Befejezés ideje','Week-, maand- en jaarweergave':'Hét-, hónap- és évnézet','Eindtijd (optioneel)':'Befejezés ideje (nem kötelező)','De eindtijd moet na de begintijd liggen.':'A befejezés ideje nem lehet a kezdés ideje előtt.',' tot ':', vége: ','Verwijderd: {0}':'Törölve: {0}','Hele reeks verwijderd: {0}':'Teljes sorozat törölve: {0}','Ongedaan maken':'Visszavonás','Verwijderen ongedaan maken':'Törlés visszavonása','De hele reeks is verwijderd. U kunt dit ongedaan maken.':'A teljes sorozat törölve. Ezt visszavonhatja.','Afspraak verwijderd, ook voor de andere deelnemers. U kunt dit ongedaan maken.':'Időpont törölve, a többi résztvevőnél is. Ezt visszavonhatja.','De afspraak is teruggezet.':'Az időpont visszaállítva.','Gesloten.':'Bezárva.','Wijzigen':'Módosítás','Wijzig afspraak {0} om {1}':'Időpont módosítása: {0}, {1}','Afspraak wijzigen':'Időpont módosítása','Wijzigingen opslaan':'Módosítások mentése','U wijzigt de afspraak {0}. Pas de gegevens aan en kies Wijzigingen opslaan.':'Az időpont módosítása: {0}. Módosítsa az adatokat, majd válassza a Módosítások mentése gombot.','Afspraak gewijzigd: {0}.':'Időpont módosítva: {0}.','Wijzigen geannuleerd.':'A módosítás megszakítva.','Hele reeks':'Teljes sorozat','Open deze dag':'A nap megnyitása','Geen':'Nincs',
+'Geen afspraken op deze dag.':'Ezen a napon nincs időpont.','Geen afspraken.':'Nincs időpont.','(samen)':'(közös)',
+'Huisarts':'Háziorvos','Kinesist':'Gyógytornász','Medicijnen':'Gyógyszerek','Boodschappen':'Bevásárlás','Bezoek':'Látogatás','Sport':'Sport',
+'Inloggen als {0}':'Bejelentkezés mint {0}','{0} (uzelf)':'{0} (Ön)','Tekstgrootte: {0} procent':'Szövegméret: {0} százalék','Ingelogd als {0}':'Bejelentkezve mint {0}',
+'Welkom {0}. Stel uw instellingen in.':'Üdvözöljük, {0}! Állítsa be a beállításait.','Welkom {0}. Stel uw instellingen eenmalig in. U kunt ze later altijd wijzigen.':'Üdvözöljük, {0}! Egyszer állítsa be a beállításait. Később bármikor módosíthatja őket.',
+'Uitgelogd.':'Kijelentkezett.','Taal gewijzigd.':'A nyelv módosítva.','Thema: {0}':'Téma: {0}','Lettertype: {0}':'Betűtípus: {0}','Soort agenda: {0}':'A naptár típusa: {0}','Maandoverzicht: {0}':'Nézet: {0}','Snelkeuze: {0}':'Gyorsválasztás: {0}',
+'Tekst groter.':'Nagyobb szöveg.','Tekst kleiner.':'Kisebb szöveg.','Kleur opgeslagen.':'Szín elmentve.','Uw agenda is nu privé.':'A naptára mostantól privát.','Anderen mogen uw agenda zien.':'Mások láthatják a naptárát.',
+'U ziet nu ook de agenda van {0}.':'Mostantól {0} naptárát is látja.','U ziet de agenda van {0} niet meer.':'Már nem látja {0} naptárát.','Instellingen opgeslagen.':'Beállítások elmentve.',
+'Typ eerst een naam.':'Először írjon be egy nevet.','{0} bestaat al.':'{0} már létezik.','{0} is toegevoegd en u ziet nu ook de agenda van {1}. Deze persoon stelt de eigen instellingen in bij het eerste inloggen.':'{0} hozzáadva, és Ön mostantól {1} naptárát is látja. Ez a személy az első bejelentkezéskor állítja be a saját beállításait.',
+'Weet u zeker dat u {0} wilt verwijderen?':'Biztosan törölni szeretné: {0}?','De {0} afspraken die alleen van deze persoon zijn, worden ook verwijderd.':'A csak ehhez a személyhez tartozó {0} időpont is törlődik.','De {0} afspraak die alleen van deze persoon zijn, worden ook verwijderd.':'A csak ehhez a személyhez tartozó {0} időpont is törlődik.',
+'Gezamenlijke afspraken blijven bij de andere deelnemers. Dit kan niet ongedaan worden gemaakt.':'A közös időpontok megmaradnak a többi résztvevőnél. Ez nem vonható vissza.','U wordt daarna uitgelogd.':'Utána kijelentkeztetjük.','Ja, verwijder {0}':'Igen, törlés: {0}','Verwijderen geannuleerd.':'A törlés megszakítva.',
+'{0} is verwijderd en u bent uitgelogd.':'{0} törölve, és Ön kijelentkezett.','{0} is verwijderd.':'{0} törölve.','Typ eerst een activiteit.':'Először írjon be egy tevékenységet.','{0} staat er al.':'{0} már szerepel.','{0} is toegevoegd aan uw vaste activiteiten.':'{0} hozzáadva az állandó tevékenységeihez.',
+'Verwijder activiteit {0}':'Tevékenység törlése: {0}','Datum: {0}':'Dátum: {0}','Tijd: {0}':'Idő: {0}','Activiteit: {0}':'Tevékenység: {0}',
+'{0} afspraken toegevoegd: {1}, elke dag, vanaf {2}.':'{0} időpont hozzáadva: {1}, minden nap, kezdete: {2}.','{0} afspraken toegevoegd: {1}, elke week, vanaf {2}.':'{0} időpont hozzáadva: {1}, minden héten, kezdete: {2}.','{0} afspraken toegevoegd: {1}, elke maand, vanaf {2}.':'{0} időpont hozzáadva: {1}, minden hónapban, kezdete: {2}.',
+'Afspraak toegevoegd: {0}, {1} om {2}.':'Időpont hozzáadva: {0}, {1}, {2}.','Afspraak verwijderd, ook voor de andere deelnemers.':'Időpont törölve, a többi résztvevőnél is.','Hele reeks verwijderd.':'A teljes sorozat törölve.',
+'{0}weergave actief. {1}':'{0} nézet aktív. {1}','Dag: {0}':'Nap: {0}','Week van {0}':'Hét kezdete: {0}','Maand: {0}':'Hónap: {0}','Jaar: {0}':'Év: {0}',
+'Open dagweergave van {0}':'Nap megnyitása: {0}','Druk de afspraken van {0} af':'Időpontok nyomtatása: {0}',
+'{0}, {1} afspraken: {2}':'{0}, {1} időpont: {2}','{0}, {1} afspraak: {2}':'{0}, {1} időpont: {2}','{0}, {1} afspraken':'{0}, {1} időpont','{0}, {1} afspraak':'{0}, {1} időpont','{0}, geen afspraken':'{0}, nincs időpont',
+'{0} afspraken':'{0} időpont','{0} afspraak':'{0} időpont',' met ':', ','{0}, om {1}, met {2}':'{0}, {1}, {2}','Verwijder afspraak {0} om {1}':'Időpont törlése: {0}, {1}','Verwijder alle afspraken van de reeks {0}':'A teljes sorozat törlése: {0}',
+'Afspraken op {0}':'Időpontok: {0}','Met: {0}':'Résztvevők: {0}',
+'Afdrukweergave voor {0} geopend. Kies Afdrukken of Sluiten.':'Nyomtatási nézet megnyitva: {0}. Válassza a Nyomtatás vagy a Bezárás gombot.','Afdrukken lukt hier niet. Gebruik het afdrukken of delen van uw browser, of open de agenda in een eigen tabblad.':'A nyomtatás itt nem sikerült. Használja a böngésző nyomtatás vagy megosztás funkcióját, vagy nyissa meg a naptárat külön lapon.','Afdrukweergave gesloten.':'Nyomtatási nézet bezárva.',
+'Voorlezen gestart.':'Felolvasás elindítva.','Voorlezen gestopt.':'Felolvasás leállítva.','{0}: geen afspraken.':'{0}: nincs időpont.','{0}: {1} afspraken.':'{0}: {1} időpont.','{0}: {1} afspraak.':'{0}: {1} időpont.','Om {0}: {1}, met {2}.':'{0}: {1}, {2}.','{0} om {1}: {2}, met {3}.':'{0}, {1}: {2}, {3}.','Deze week.':'Ezen a héten.','Jaar {0}.':'{0}. év.',
+'Ik luister. Spreek nu uw afspraak in.':'Hallgatom. Most mondja be az időpontot.','Verstaan: {0}':'Értettem: {0}','Kon de microfoon niet starten.':'A mikrofon nem indítható.',
+'Spraakherkenning wordt door deze browser niet ondersteund. Typ de zin in het tekstveld, of gebruik Chrome of Safari.':'Ez a böngésző nem támogatja a beszédfelismerést. Írja be a mondatot a szövegmezőbe, vagy használja a Chrome-ot vagy a Safarit.',
+'De microfoon is geblokkeerd. Sta de microfoon toe in uw browser, of open de agenda in een eigen tabblad van Chrome of Safari.':'A mikrofon le van tiltva. Engedélyezze a böngészőben, vagy nyissa meg a naptárat külön lapon a Chrome-ban vagy a Safariban.',
+'Spraakherkenning is in deze weergave niet toegestaan. Open de agenda in een eigen browsertabblad.':'A beszédfelismerés ebben a nézetben nem engedélyezett. Nyissa meg a naptárat külön böngészőlapon.','Ik heb niets gehoord. Probeer het opnieuw.':'Nem hallottam semmit. Próbálja újra.','Spraakherkenning heeft internet nodig.':'A beszédfelismeréshez internet kell.','Er is geen microfoon gevonden.':'Nem található mikrofon.','Spraakherkenning mislukt: {0}.':'A beszédfelismerés sikertelen: {0}.',
+'{0} U kunt de zin ook typen, of de microfoontoets van uw toetsenbord gebruiken.':'{0} Beírhatja a mondatot is, vagy használhatja a billentyűzet mikrofon gombját.',
+'Ik heb de datum of tijd niet goed verstaan. Controleer het formulier hieronder en sla de afspraak op.':'Nem értettem jól a dátumot vagy az időpontot. Ellenőrizze az alábbi űrlapot, majd mentse az időpontot.','De agenda is bijgewerkt door een andere gebruiker.':'A naptárat egy másik felhasználó frissítette.','Gegevens ophalen…':'Adatok betöltése…','Vandaag: {0}':'Ma: {0}','Huidige maand: {0}':'Aktuális hónap: {0}','{0} – vandaag':'{0} – ma','{0} (vandaag)':'{0} (ma)','Gesynchroniseerd met de gedeelde agenda.':'Szinkronizálva a közös naptárral.','Geen verbinding: u werkt met de laatst bekende gegevens. Wijzigingen worden verstuurd zodra er weer verbinding is.':'Nincs kapcsolat: az utoljára ismert adatokkal dolgozik. A módosítások akkor lesznek elküldve, ha újra van kapcsolat.','Verbinding hersteld. De agenda is gesynchroniseerd.':'A kapcsolat helyreállt. A naptár szinkronizálva.','Geen verbinding: nieuwe gegevens worden later verstuurd.':'Nincs kapcsolat: az új adatok később lesznek elküldve.'
+}}};
+let LANG='nl';try{const c=localStorage.getItem('agenda-lang');if(LANGS[c])LANG=c}catch(e){}
+const LOC=()=>LANGS[LANG].loc;
+const rx=s=>s.replace(/[.*+?^$()|[\]\\]/g,'\\$&');
+function bld(L){if(L._b)return L._b;const ex=new Map(),pt=[];
+ for(const k in L.d){const v=L.d[k];if(/\{\d\}/.test(k))pt.push([new RegExp('^'+rx(k).replace(/\{(\d)\}/g,'(.+?)')+'$'),v]);else ex.set(k,v)}
+ return L._b={ex,pt}}
+function tr1(s){if(LANG==='nl'||typeof s!=='string')return s;const b=bld(LANGS[LANG]);
+ if(b.ex.has(s))return b.ex.get(s);
+ for(const[re,v]of b.pt){const m=s.match(re);if(m)return v.replace(/\{(\d)\}/g,(_,i)=>tr1(m[+i+1]))}
+ return s}
+const tr=tr1,T=tr1;
+function say(t){t=tr(t);$('#status').textContent='';setTimeout(()=>$('#status').textContent=t,30)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(Array.isArray(t)?t.map(tr).join(' '):tr(t));u.lang=LOC();speechSynthesis.speak(u)}
+function dayText(d){const l=sorted(d);if(!l.length)return[label(d)+': geen afspraken.'];
+ return[`${label(d)}: ${l.length} ${l.length>1?'afspraken':'afspraak'}.`].concat(l.map(e=>`Om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}: ${e.title}, met ${names(e)}.`))}
+$('#read').onclick=()=>{let t;
+ if(view==='dag')t=dayText(cur);
+ else if(view==='week'){const mon=addDays(cur,-((fromIso(cur).getDay()+6)%7));t=['Deze week.'].concat(...[0,1,2,3,4,5,6].map(i=>dayText(addDays(mon,i))))}
+ else if(view==='maand'){const l=inRange(cur.slice(0,7));t=[`${mlabel(cur)}: ${l.length} afspraken.`].concat(l.map(e=>`${label(e.date)} om ${spokenTime(e.time)}: ${e.title}, met ${names(e)}.`))}
+ else{const y=fromIso(cur).getFullYear();t=[`Jaar ${y}.`].concat([...Array(12).keys()].map(m=>{const f=iso(new Date(y,m,1));return `${mlabel(f)}: ${inRange(y+'-'+pad(m+1)).length} afspraken.`}))}
+ say('Voorlezen gestart.');speak(t)};
+$('#dpBtn').onclick=()=>{delN=$('#dp').value;if(!delN)return;
+ const solo=db.events.filter(e=>e.owner===delN&&!e.who.length).length;
+ $('#dpTxt').textContent=[tr('Weet u zeker dat u '+uname(delN)+' wilt verwijderen?'),solo?tr('De '+solo+(solo>1?' afspraken':' afspraak')+' die alleen van deze persoon zijn, worden ook verwijderd.'):'',tr('Gezamenlijke afspraken blijven bij de andere deelnemers. Dit kan niet ongedaan worden gemaakt.'),delN===me?tr('U wordt daarna uitgelogd.'):''].filter(Boolean).join(' ');
+ $('#dpYes').textContent=tr('Ja, verwijder '+uname(delN));$('#dpConf').hidden=false;$('#dpYes').focus();say($('#dpTxt').textContent)};
+function parseG(text){const P=LANGS[LANG].p;
+ let t=' '+text.toLowerCase().replace(/[’‘´]/g,"'").replace(/[.,!?]/g,' ')+' ',date=null,time=null,m;
+ const w=x=>new RegExp('(^| )'+x+'( |$)'),nm=x=>/^\d+$/.test(x)?+x:P.num[x];
+ if(w(P.dat).test(t)){date=addDays(TODAY(),2);t=t.replace(w(P.dat),' ')}
+ else if(w(P.tom).test(t)){date=addDays(TODAY(),1);t=t.replace(w(P.tom),' ')}
+ else if(w(P.tod).test(t)){date=TODAY();t=t.replace(w(P.tod),' ')}
+ else P.days.forEach((dn,i)=>{const re=new RegExp('(^| )'+dn+'\\S*( |$)');if(!date&&re.test(t)){date=addDays(TODAY(),(i-new Date().getDay()+7)%7||7);t=t.replace(re,' ')}});
+ const pm=P.pm.test(t),am=/reggel|délelőtt|hajnal/.test(t),fix=h=>(pm&&h<12)?h+12:(!am&&h>=1&&h<=6)?h+12:h;
+ if(m=t.match(/(\d{1,2})[:.](\d{2})/)){time=pad(fix(+m[1]))+':'+m[2];t=t.replace(m[0],' ')}
+ else if((m=t.match(new RegExp(P.half+' (\\S+)')))&&nm(m[1])!=null){time=pad(fix(nm(m[1])-1))+':30';t=t.replace(m[0],' ')}
+ else if((m=t.match(P.hr))&&nm(m[1])!=null){time=pad(fix(nm(m[1])))+':00';t=t.replace(m[0],' ')}
+ t=t.replace(P.pm,' ').replace(/(^| )(reggel|délelőtt|hajnal)( |$)/g,' ').replace(P.junk,' ');
+ const who=[];Object.keys(db.users).forEach(n=>{if(n===me)return;const re=nameRe(uname(n),true);if(re.test(t)){who.push(n);t=t.replace(re,' ')}});
+ const title=t.replace(/\s+/g,' ').trim();return{title:title.charAt(0).toUpperCase()+title.slice(1),date,time,who}}
+function parse(text){return LANGS[LANG].p?parseG(text):parseNL(text)}
+const MOO={childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['aria-label']};
+let tq=0,busy=false;
+const mo=new MutationObserver(()=>{if(!tq)tq=setTimeout(()=>{tq=0;translateDOM()},0)});
+function translateDOM(){if(busy)return;busy=true;mo.disconnect();
+ try{document.documentElement.lang=LANGS[LANG].code;document.title=tr('Toegankelijke gedeelde agenda');
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  let n;while(n=w.nextNode()){const cur=n.nodeValue;if(cur!==n.__w)n.__o=cur;const core=n.__o.trim();
+   if(!core){n.__w=cur;continue}
+   const out=n.__o.match(/^\s*/)[0]+tr(core)+n.__o.match(/\s*$/)[0];n.__w=out;if(out!==cur)n.nodeValue=out}
+  document.querySelectorAll('[aria-label]').forEach(el=>{const cur=el.getAttribute('aria-label');if(cur!==el.__w)el.__o=cur;const out=tr(el.__o);el.__w=out;if(out!==cur)el.setAttribute('aria-label',out)})
+ }finally{mo.observe(document.body,MOO);busy=false}}
+function fillLang(){const o=Object.keys(LANGS).map(k=>`<option value="${k}"${k===LANG?' selected':''}>${LANGS[k].name}</option>`).join('');$('#lgL').innerHTML=o;$('#lgS').innerHTML=o}
+function setLang(c){if(!LANGS[c])return;LANG=c;try{localStorage.setItem('agenda-lang',c)}catch(e){}
+ if(me){S().lang=c;save();apply();renderSettings();renderForm();render()}else showLogin();
+ fillLang();translateDOM();say('Taal gewijzigd.')}
+$('#lgL').onchange=$('#lgS').onchange=e=>setLang(e.target.value);
+/* ===== Beheer, wisselknop en pincode ===== */
+const HIDES=[['inst','Instellingen tonen'],['spraak','Afspraak inspreken'],['samen','Samen met'],['herhalen','Herhalen'],['eind','Eindtijd'],['act','Vaste activiteit kiezen'],['print','Afdrukken'],['weergaven','Week-, maand- en jaarweergave']];
+function isGrid(){return S().ui==='normaal'||S().size<=150}
+const isAdmin=()=>!!S().admin||!Object.values(db.users).some(u=>u.admin);
+function renderAdm(){
+ const adm=isAdmin();$('#admBtn').hidden=!adm;
+ if(!adm){$('#adm').hidden=true;$('#admBtn').setAttribute('aria-expanded','false');return}
+ if($('#adm').hidden)return;
+ $('#admInfo').textContent=Object.values(db.users).some(u=>u.admin)?'U bent beheerder.':'Er is nog geen beheerder. Vink bij uzelf “Beheerder” aan.';
+ const all=Object.keys(db.users);
+ $('#admList').innerHTML=all.map(n=>{const u=db.users[n],o=all.filter(x=>x!==n);
+  return `<li class="dag"><h3>${esc(uname(n))} <span class="sw" style="background:${colorOf(n)}"></span></h3>
+ <label class="chk"><input type="checkbox" data-adm="admin" data-p="${esc(n)}" ${u.admin?'checked':''}> Beheerder</label>
+ <label class="chk"><input type="checkbox" data-adm="priv" data-p="${esc(n)}" ${u.priv?'checked':''}> Agenda is privé</label>
+ <fieldset><legend>Agenda’s die ${esc(uname(n))} ziet</legend>${o.length?o.map(x=>`<label class="chk"><input type="checkbox" data-adm="sees" data-p="${esc(n)}" data-o="${esc(x)}" ${(u.sees||[]).includes(x)?'checked':''}> ${esc(uname(x))}</label>`).join(''):'<p>Nog geen andere personen.</p>'}</fieldset>
+ <fieldset><legend>Vereenvoudigen voor ${esc(uname(n))}</legend>${HIDES.map(([k,l])=>`<label class="chk"><input type="checkbox" data-adm="hide" data-p="${esc(n)}" data-o="${k}" ${(u.hide||[]).includes(k)?'checked':''}> ${l}</label>`).join('')}<label class="chk"><input type="checkbox" data-adm="lay" data-p="${esc(n)}" ${u.lay==='form'?'checked':''}> Afspraak toevoegen bovenaan</label></fieldset>
+ <button type="button" data-adel="${esc(n)}" aria-label="Verwijder persoon ${esc(uname(n))}">Verwijderen</button></li>`}).join('')}
+$('#admBtn').onclick=()=>{const open=$('#adm').hidden;$('#adm').hidden=!open;$('#admBtn').setAttribute('aria-expanded',open);$('#admBtn').textContent=open?'Beheer verbergen':'Beheer tonen';renderAdm()};
+$('#admList').onchange=e=>{const c=e.target,p=c.dataset.p,k=c.dataset.adm;if(!k||!db.users[p])return;const u=db.users[p];
+ if(k==='admin')u.admin=c.checked;else if(k==='priv')u.priv=c.checked;
+ else if(k==='hide'){const o=c.dataset.o;u.hide=(u.hide||[]).filter(x=>x!==o);if(c.checked)u.hide.push(o)}
+ else if(k==='lay')u.lay=c.checked?'form':'';
+ else{const o=c.dataset.o;u.sees=(u.sees||[]).filter(x=>x!==o);if(c.checked)u.sees.push(o)}
+ save();apply();renderSettings();render();say('Instelling opgeslagen voor '+uname(p)+'.');
+ const q=`[data-adm="${k}"][data-p="${CSS.escape(p)}"]`+(k==='sees'||k==='hide'?`[data-o="${CSS.escape(c.dataset.o)}"]`:'');const el=document.querySelector(q);if(el)el.focus()};
+$('#admList').onclick=e=>{const b=e.target.closest('[data-adel]');if(!b)return;openInst(true);$('#dp').value=b.dataset.adel;$('#dpBtn').click()};
+function adminAdd(){const n=$('#anp').value.trim();if(!n){say('Typ eerst een naam.');$('#anp').focus();return}
+ const ex=findByName(n);if(ex){say(uname(ex)+' bestaat al.');return}
+ db.users[newId()]=mkUser(n);save();$('#anp').value='';renderSettings();renderForm();say(n+' is aangemaakt.');$('#anp').focus()}
+$('#anpBtn').onclick=adminAdd;$('#anp').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();adminAdd()}};
+$('#expBtn').onclick=()=>{$('#expTxt').value=JSON.stringify(db);say('De back-up staat in het tekstveld. Kopieer de tekst en bewaar ze op uw externe schijf.');$('#expTxt').focus()};
+$('#copyBtn').onclick=async()=>{const t=$('#expTxt');if(!t.value)t.value=JSON.stringify(db);t.select();try{await navigator.clipboard.writeText(t.value);say('Gekopieerd.')}catch(e){say('Kopiëren is hier niet gelukt. De tekst is geselecteerd; kopieer met Ctrl+C of via het menu van uw telefoon.')}};
+let impOk=false;
+$('#expTxt').oninput=()=>{impOk=false};
+$('#impBtn').onclick=()=>{let d;try{d=JSON.parse($('#expTxt').value)}catch(e){say('Dit is geen geldige back-up.');return}
+ if(!d||typeof d.users!=='object'||!d.users||!Array.isArray(d.events)){say('Dit is geen geldige back-up.');return}
+ if(!impOk){impOk=true;say('Weet u het zeker? Alle huidige gegevens worden vervangen. Kies nogmaals Terugzetten om te bevestigen.');return}
+ impOk=false;d=migrate(d);Object.values(d.users).forEach(u=>{u.sees=u.sees||[]});db=d;save();
+ if(!db.users[me])showLogin();else{apply();renderSettings();renderForm();render()}
+ say('De back-up is teruggezet.')};
+function renderSwap(){const s=S(),sw=s.swap||[],list=sw.filter(n=>db.users[n]&&n!==me);
+ $('#swapBox').innerHTML=Object.keys(db.users).filter(n=>n!==me).map(n=>`<label class="chk"><input type="checkbox" data-swap="${esc(n)}" ${sw.includes(n)?'checked':''}> ${esc(uname(n))}</label>`).join('')||'<p>Er zijn nog geen andere gebruikers.</p>';
+ $('#wissel').innerHTML=list.map(n=>`<button type="button" data-sw="${esc(n)}" aria-label="Wissel naar ${esc(uname(n))}" style="border-color:${colorOf(n)};border-width:.3rem">Wissel naar ${esc(uname(n))}</button>`).join('');
+ $('#wissel').hidden=!list.length;
+ $('#pinState').textContent=s.pin?'Er is een pincode ingesteld.':'Er is geen pincode ingesteld.'}
+$('#swapBox').onchange=e=>{const n=e.target.dataset.swap;if(!n)return;
+ change(s=>{s.swap=(s.swap||[]).filter(x=>x!==n);if(e.target.checked)s.swap.push(n)},e.target.checked?'De wisselknop voor '+uname(n)+' staat aan.':'De wisselknop voor '+uname(n)+' staat uit.')};
+let swTo=null;
+$('#wissel').onclick=e=>{const b=e.target.closest('[data-sw]');if(!b)return;const n=b.dataset.sw;
+ if(db.users[n]&&db.users[n].pin){swTo=n;$('#pinWho').textContent=uname(n);$('#pinIn').value='';$('#pinBox').hidden=false;$('#pinIn').focus();say('Voer de pincode van '+uname(n)+' in.')}
+ else login(n)};
+function pinGo(){if(!swTo)return;if($('#pinIn').value===db.users[swTo].pin){const n=swTo;swTo=null;$('#pinBox').hidden=true;login(n)}else{say('De pincode klopt niet.');$('#pinIn').value='';$('#pinIn').focus()}}
+$('#pinOk').onclick=pinGo;$('#pinIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();pinGo()}};
+$('#pinNo').onclick=()=>{swTo=null;$('#pinBox').hidden=true;say('Wisselen geannuleerd.')};
+$('#pinSave').onclick=()=>{const v=$('#pinSet').value;if(!/^\d{4}$/.test(v)){say('Een pincode bestaat uit 4 cijfers.');$('#pinSet').focus();return}
+ change(s=>s.pin=v,'Pincode opgeslagen.');$('#pinSet').value=''};
+$('#pinClear').onclick=()=>change(s=>{delete s.pin},'Pincode gewist.');
+/* ===== Afspraak wijzigen en ongedaan maken ===== */
+let editId=null,undoList=null;
+function startEdit(id){const e=db.events.find(x=>x.id===id);if(!e)return;editId=id;
+ $('#fT').value=e.title;$('#fD').value=e.date;$('#fH').value=e.time;$('#fE').value=e.end||'';markT();
+ document.querySelectorAll('input[name=p]').forEach(c=>c.checked=people(e).includes(c.value));
+ $('#fR').value='';$('#rBox').hidden=true;
+ $('#fSave').textContent='Wijzigingen opslaan';$('#fCancel').hidden=false;$('#formH').textContent='Afspraak wijzigen';
+ $('#fT').focus();say('U wijzigt de afspraak '+e.title+'. Pas de gegevens aan en kies Wijzigingen opslaan.')}
+function endEdit(){editId=null;$('#fSave').textContent='Afspraak opslaan';$('#fCancel').hidden=true;$('#formH').textContent='Afspraak toevoegen'}
+function saveEdit(b){const ev=db.events.find(x=>x.id===editId);if(!ev){endEdit();return}
+ const others=b.who.filter(x=>x!==ev.owner);
+ ev.title=b.title;ev.date=b.date;ev.time=b.time;ev.end=b.end;ev.who=ev.owner===me?others:others.concat([me]);
+ save();cur=ev.date;endEdit();renderForm();render();say('Afspraak gewijzigd: '+ev.title+'.')}
+$('#fCancel').onclick=()=>{endEdit();$('#f').reset();$('#fD').value=cur;$('#fH').value='09:00';markT();say('Wijzigen geannuleerd.')};
+function askUndo(gone,series){undoList=gone;const t=gone[0]?gone[0].title:'';
+ $('#undoTxt').textContent=(series?'Hele reeks verwijderd: ':'Verwijderd: ')+t;$('#undoBar').hidden=false;
+ say(series?'De hele reeks is verwijderd. U kunt dit ongedaan maken.':'Afspraak verwijderd, ook voor de andere deelnemers. U kunt dit ongedaan maken.');
+ setTimeout(()=>$('#undoBtn').focus(),50)}
+$('#undoBtn').onclick=()=>{if(!undoList)return;db.events=db.events.concat(undoList.filter(g=>!db.events.some(x=>x.id===g.id)));undoList=null;save();$('#undoBar').hidden=true;render();say('De afspraak is teruggezet.');$('#titel').focus()};
+$('#undoNo').onclick=()=>{undoList=null;$('#undoBar').hidden=true;say('Gesloten.');$('#titel').focus()};
+
+/* ===== Synchronisatie met de gedeelde database (Supabase) =====
+   Elke persoon en elke afspraak is één rij in de tabel 'items'. Bij elke wijziging worden alleen de gewijzigde rijen verstuurd.
+   Een kleine 'meta'-rij vertelt andere toestellen dat er iets veranderd is; zij halen dan alles opnieuw op. */
+const SB={url:'https://nbulxgrxipgtnigreoab.supabase.co',key:'sb_publishable_4KwPon8vQ1sQS8qZUPIhKw_ooajFqJj'};
+const sbHead=(x)=>Object.assign({apikey:SB.key,'Content-Type':'application/json'},x||{});
+function sbFetch(path,opt){const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);
+ return fetch(SB.url+'/rest/v1/'+path,Object.assign({signal:c.signal},opt)).then(r=>{clearTimeout(t);if(!r.ok)throw new Error('http '+r.status);return r},e=>{clearTimeout(t);throw e})}
+let lastErr='',rem=new Map(),synced=false,pushing=false,again=false,lastMeta=null,online=null;
+function itemsOf(){const m=new Map();
+ Object.keys(db.users).forEach(id=>m.set('user:'+id,{id:'user:'+id,kind:'user',data:db.users[id]}));
+ db.events.forEach(e=>m.set('event:'+e.id,{id:'event:'+e.id,kind:'event',data:e}));return m}
+function diffNow(){const cur=itemsOf(),up=[],del=[];
+ cur.forEach((r,id)=>{const j=JSON.stringify(r.data);if(rem.get(id)!==j)up.push([r,j])});
+ rem.forEach((j,id)=>{if(!cur.has(id))del.push(id)});return{up,del}}
+function setSync(ok,quiet){const el=$('#sync');if(!el)return;
+ const msg=ok?'Gesynchroniseerd met de gedeelde agenda.':'Geen verbinding: u werkt met de laatst bekende gegevens. Wijzigingen worden verstuurd zodra er weer verbinding is.';
+ el.textContent=tr(msg)+(!ok&&lastErr?' ['+lastErr+']':'');
+ if(online!==null&&online!==ok&&!quiet)say(ok?'Verbinding hersteld. De agenda is gesynchroniseerd.':'Geen verbinding: nieuwe gegevens worden later verstuurd.');
+ online=ok}
+async function push(){
+ if(!synced)return;if(pushing){again=true;return}
+ pushing=true;
+ try{do{again=false;
+   const{up,del}=diffNow();if(!up.length&&!del.length)break;
+   const stamp=new Date().toISOString(),t=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+   for(let i=0;i<up.length;i+=100){
+    const part=up.slice(i,i+100),rows=part.map(([r])=>({id:r.id,kind:r.kind,data:r.data,updated_at:stamp}));
+    if(i+100>=up.length)rows.push({id:'meta',kind:'meta',data:{t},updated_at:stamp});
+    await sbFetch('items?on_conflict=id',{method:'POST',headers:sbHead({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(rows)});
+    part.forEach(([r,j])=>rem.set(r.id,j))}
+   for(let i=0;i<del.length;i+=50){const part=del.slice(i,i+50);
+    await sbFetch('items?id=in.('+encodeURIComponent(part.map(x=>'"'+x+'"').join(','))+')',{method:'DELETE',headers:sbHead({Prefer:'return=minimal'})});
+    part.forEach(id=>rem.delete(id))}
+   if(!up.length)await sbFetch('items?on_conflict=id',{method:'POST',headers:sbHead({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([{id:'meta',kind:'meta',data:{t},updated_at:stamp}])});
+   lastMeta=t;
+  }while(again);setSync(true)}
+ catch(e){lastErr=e.name==='AbortError'?'time-out':(e.message||'fout');setSync(false)}
+ finally{pushing=false}}
+function adoptRows(rows){
+ const users={},events=[],r2=new Map();let meta=null;
+ rows.forEach(r=>{if(r.kind==='meta'){meta=r.data&&r.data.t;return}r2.set(r.id,JSON.stringify(r.data));
+  if(r.kind==='user')users[r.id.slice(5)]=r.data;else if(r.kind==='event')events.push(r.data)});
+ const before=JSON.stringify([db.users,db.events]),oldNames=JSON.stringify(Object.keys(db.users).map(k=>[k,db.users[k].name]));
+ db={v:2,next:db.next||1,users,events};rem=r2;lastMeta=meta;localSave();
+ return{changed:before!==JSON.stringify([db.users,db.events]),usersChanged:oldNames!==JSON.stringify(Object.keys(db.users).map(k=>[k,db.users[k].name]))}}
+function refreshUI(r){
+ if(!r.changed)return;
+ if(me&&!db.users[me]){showLogin();say('De agenda is bijgewerkt door een andere gebruiker.');return}
+ if(me){apply();renderSettings();if(r.usersChanged)renderForm();render();say('De agenda is bijgewerkt door een andere gebruiker.')}else showLogin()}
+async function init(){
+ try{
+  const rows=await(await sbFetch('items?select=id,kind,data',{headers:sbHead()})).json();
+  if(!rows.some(r=>r.kind==='user')){synced=true;rem=new Map();await push()}
+  else{const mine=localStorage.getItem(K);const r=adoptRows(rows);synced=true;
+   if(r.changed&&mine){try{localStorage.setItem('agenda-lokaal-backup',mine)}catch(e){}}
+   refreshUI(r)}
+  setSync(true,true);return true}
+ catch(e){lastErr=e.name==='AbortError'?'time-out':(e.message||'fout');synced=false;setSync(false,true);return false}}
+let ticking=false;
+async function tick(){
+ if(ticking)return;ticking=true;
+ try{
+  if(!synced){await init();return}
+  if(pushing)return;
+  const d=diffNow();if(d.up.length||d.del.length){await push();return}
+  const m=await(await sbFetch('items?id=eq.meta&select=data',{headers:sbHead()})).json();
+  const t=m[0]&&m[0].data&&m[0].data.t;
+  if(t!==lastMeta){const rows=await(await sbFetch('items?select=id,kind,data',{headers:sbHead()})).json();
+   const d2=diffNow();if(!pushing&&!d2.up.length&&!d2.del.length)refreshUI(adoptRows(rows))}
+  setSync(true)}
+ catch(e){lastErr=e.name==='AbortError'?'time-out':(e.message||'fout');setSync(false)}
+ finally{ticking=false}}
+setInterval(()=>{if(document.visibilityState==='visible')tick()},10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()});
+window.addEventListener('online',()=>tick());window.addEventListener('focus',()=>tick());
+localSave();fillLang();translateDOM();$('#login').hidden=true;say('Gegevens ophalen…');
+init().then(()=>{showLogin();translateDOM();if(online)say('Gesynchroniseerd met de gedeelde agenda.');else say('Geen verbinding: u werkt met de laatst bekende gegevens. Wijzigingen worden verstuurd zodra er weer verbinding is.')});
+</script>
+</body>
+</html>
