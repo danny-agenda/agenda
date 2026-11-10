@@ -61,6 +61,18 @@ html[data-ui=normaal] :focus{outline-width:.1875rem}
 .info{white-space:pre-wrap;overflow-wrap:anywhere;display:inline-block;margin:.2em 0}
 #fI,#fbTxt{width:100%;font:inherit;min-height:4em}
 .seen td,.seen th{text-align:left;padding:.3em .6em;border-bottom:1px solid var(--bd)}
+.vandaag{background:var(--vb,var(--fg))!important;color:var(--vt,var(--bg))!important;border-style:solid!important;border-width:.2rem!important}
+html[data-heeft] .grid .heeft,html[data-heeft] .cal .heeft{background:var(--ab);color:var(--at)}
+#adm{font-size:16px}#adm h2{font-size:22px;margin:4px 0 8px}#adm h3{font-size:18px;margin:4px 0}#adm legend{font-size:16px}
+#adm button,#adm select,#adm input[type=text]{min-height:44px;min-width:44px;padding:6px 14px;border-width:2px;border-radius:6px;font-size:16px;width:auto}
+#adm select{min-width:12em}#adm input[type=text]{width:16em;max-width:100%}
+#adm input[type=color]{width:64px;height:44px;border-width:2px}
+#adm label{font-size:16px;margin:0}#adm label.chk{min-height:40px;gap:8px;font-weight:400}#adm input[type=checkbox]{width:22px;height:22px}
+#adm .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;border-bottom:2px solid var(--bd);padding-bottom:8px}
+#adm [role=tab][aria-selected=true]{background:var(--bg);color:var(--fg);box-shadow:inset 0 0 0 2px var(--fg);text-decoration:underline}
+#adm .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:12px;align-items:start}
+#adm fieldset{margin:0;padding:8px 12px;border-width:2px}#adm .dag,#adm .row{margin:6px 0;gap:8px}#adm .dag{border-width:2px;padding:10px}
+#adm textarea{font:inherit;width:100%;min-height:8em}#adm .kpv{display:inline-block;padding:6px 14px;border:2px solid var(--bd);border-radius:6px;font-weight:700;margin:4px 0}
 </style>
 </head>
 <body>
@@ -138,24 +150,37 @@ html[data-ui=normaal] :focus{outline-width:.1875rem}
 </section>
 
 <button id="admBtn" aria-expanded="false" aria-controls="adm" hidden>Beheer tonen</button>
-<section id="adm" class="panel" aria-labelledby="admH" hidden>
+<section id="adm" class="panel cmp" aria-labelledby="admH" hidden>
 <h2 id="admH">Beheer</h2>
-<p>Let op: dit is een prototype zonder echte beveiliging. Met de echte database wordt dit beschermd.</p>
 <p id="admInfo"></p>
-<ul id="admList" aria-label="Personen"></ul>
-<fieldset><legend>Nieuwe persoon aanmaken</legend><label for="anp">Naam</label><input type="text" id="anp" maxlength="30" autocomplete="off"><div class="row"><button id="anpBtn" type="button">Persoon aanmaken</button></div></fieldset>
+<div class="tabs" role="tablist" aria-label="Onderdelen van Beheer">
+<button type="button" role="tab" id="tabP" aria-controls="pnP" aria-selected="true" data-tab="P">Personen</button>
+<button type="button" role="tab" id="tabG" aria-controls="pnG" aria-selected="false" tabindex="-1" data-tab="G">Gebruik</button>
+<button type="button" role="tab" id="tabO" aria-controls="pnO" aria-selected="false" tabindex="-1" data-tab="O">Opmerkingen</button>
+<button type="button" role="tab" id="tabB" aria-controls="pnB" aria-selected="false" tabindex="-1" data-tab="B">Back-up</button></div>
+<div id="pnP" role="tabpanel" aria-labelledby="tabP">
+<div class="row"><label for="admWho">Persoon</label><select id="admWho"></select></div>
+<ul id="admList" aria-label="Instellingen van de gekozen persoon"></ul>
+<fieldset><legend>Nieuwe persoon aanmaken</legend><div class="row"><label for="anp">Naam</label><input type="text" id="anp" maxlength="30" autocomplete="off"><button id="anpBtn" type="button">Persoon aanmaken</button></div></fieldset>
+</div>
+<div id="pnG" role="tabpanel" aria-labelledby="tabG" hidden>
 <fieldset id="useSet"><legend>Gebruik van de agenda</legend>
 <p>Zo ziet u of de agenda echt gebruikt wordt.</p>
 <div class="row"><button id="useBtn" type="button">Gebruik verversen</button><button id="seeAll" type="button">Toon alle agenda’s in mijn overzicht</button></div>
 <div id="useOut" role="region" aria-live="polite" aria-label="Gebruiksoverzicht"></div></fieldset>
+</div>
+<div id="pnO" role="tabpanel" aria-labelledby="tabO" hidden>
 <fieldset id="fbSet"><legend>Opmerkingen van gebruikers</legend>
 <div class="row"><button id="fbRefresh" type="button">Opmerkingen verversen</button></div>
 <ul id="fbList" aria-label="Opmerkingen"></ul></fieldset>
+</div>
+<div id="pnB" role="tabpanel" aria-labelledby="tabB" hidden>
 <fieldset><legend>Back-up</legend>
 <div class="row"><button id="expBtn" type="button">Alle gegevens tonen voor back-up</button><button id="copyBtn" type="button">Kopiëren</button></div>
 <label for="expTxt">Back-uptekst (bewaar deze in een tekstbestand op uw externe schijf)</label>
 <textarea id="expTxt"></textarea>
 <div class="row"><button id="impBtn" type="button">Terugzetten uit deze tekst</button></div></fieldset>
+</div>
 </section>
 <section id="spraakSec" aria-labelledby="spraakH" class="panel">
 <h2 id="spraakH">Afspraak inspreken</h2>
@@ -282,6 +307,7 @@ $('#logout').onclick=()=>{speechSynthesis&&speechSynthesis.cancel();const back=h
 
 /* Instellingen per gebruiker */
 function apply(){const s=S(),R=document.documentElement,hide=isAdmin()?[]:(s.hide||[]);R.dataset.theme=s.theme;R.dataset.font=s.font;R.dataset.ui=s.ui;R.style.fontSize=Math.max(s.size,s.ui==='normaal'?70:100)+'%';
+ const kl=s.kl||{};['vb','vt','ab','at'].forEach(k=>{if(kl[k])R.style.setProperty('--'+k,kl[k]);else R.style.removeProperty('--'+k)});if(kl.ab)R.dataset.heeft='1';else delete R.dataset.heeft;
  R.dataset.hide=hide.join(' ');R.dataset.lay=s.lay||'';if(hide.includes('weergaven')&&view!=='dag')view='dag';
  const f=$('#formSec'),ag=$('#agenda');if(s.lay==='form')ag.before(f);else ag.after(f)}
 const SZ=[70,85,100,125,150,175,200,225,250,275,300];
@@ -385,7 +411,7 @@ function render(){
   $('#titel').textContent='Maand: '+mlabel(cur);
   const cal=isGrid();if(cal){L.className='cal';h+=[1,2,3,4,5,6,0].map(i=>new Date(2024,0,7+i).toLocaleDateString(LOC(),{weekday:'short'})).map(x=>`<li class="wdn" aria-hidden="true">${x}</li>`).join('')+'<li aria-hidden="true"></li>'.repeat((new Date(y,m,1).getDay()+6)%7)}
   for(let i=1;i<=n;i++){const day=iso(new Date(y,m,i)),ev=sorted(day),c=ev.length,wd=fromIso(day).toLocaleDateString(LOC(),{weekday:'short'});
-   const isT=day===TODAY();h+=`<li><button data-go="${day}"${isT?' class="vandaag" aria-current="date"':''} aria-label="${isT?'Vandaag: ':''}${esc(label(day))}, ${c?c+(c>1?' afspraken':' afspraak')+': '+esc(ev.map(e=>spokenTime(e.time)+' '+e.title+T(' met ')+names(e)).join('; ')):'geen afspraken'}"><b>${isT?'▶ ':''}${cal?i:wd+' '+i}${isT&&!cal?' (vandaag)':''}</b><br>${S().chips?chipHtml(ev):(cal?(c?'● '+c:''):(c?c+(c>1?' afspraken':' afspraak'):'Geen'))}</button></li>`}
+   const isT=day===TODAY();h+=`<li><button data-go="${day}" class="${isT?'vandaag':''}${c?' heeft':''}"${isT?' aria-current="date"':''} aria-label="${isT?'Vandaag: ':''}${esc(label(day))}, ${c?c+(c>1?' afspraken':' afspraak')+': '+esc(ev.map(e=>spokenTime(e.time)+' '+e.title+T(' met ')+names(e)).join('; ')):'geen afspraken'}"><b>${isT?'▶ ':''}${cal?i:wd+' '+i}${isT&&!cal?' (vandaag)':''}</b><br>${S().chips?chipHtml(ev):(cal?(c?'● '+c:''):(c?c+(c>1?' afspraken':' afspraak'):'Geen'))}</button></li>`}
  }else{
   const y=fromIso(cur).getFullYear();$('#titel').textContent='Jaar: '+y;
   for(let m=0;m<12;m++){const first=iso(new Date(y,m,1)),c=inRange(y+'-'+pad(m+1)).length;
@@ -494,6 +520,7 @@ hu:{name:'Magyar',code:'hu',loc:'hu-HU',sr:'hu-HU',h:'óra',and:' és ',
 p:{tod:'ma',tom:'holnap',dat:'holnapután',days:['vasárnap','hétfő','kedd','szerd','csütörtök','péntek','szombat'],half:'fél',hr:/(\S+) ó(?:ra|rakor)/,pm:/délután|este/,junk:/(^| )(és|-?kor|-?val|-?vel)( |$)/g,
 num:{egy:1,kettő:2,két:2,három:3,négy:4,öt:5,hat:6,hét:7,nyolc:8,kilenc:9,tíz:10,tizenegy:11,tizenkettő:12,tizenhárom:13,tizennégy:14,tizenöt:15,tizenhat:16,tizenhét:17,tizennyolc:18,tizenkilenc:19,húsz:20,huszonegy:21,huszonkettő:22,huszonhárom:23}},
 d:{
+'Onderdelen van Beheer':'A Kezelés részei','Gebruik':'Használat','Instellingen van de gekozen persoon':'A kiválasztott személy beállításai','Rechten':'Jogosultságok','Kleuren in de maandweergave voor':'Színek a hónap nézetben:','Eigen kleuren voor de dag van vandaag':'Saját színek a mai naphoz','Eigen kleuren voor dagen met afspraken':'Saját színek az időpontos napokhoz','Achtergrond':'Háttér','Tekst':'Szöveg','Kleuren terugzetten naar standaard':'Színek visszaállítása az alapértelmezettre','Kleuren teruggezet naar standaard.':'A színek visszaállítva az alapértelmezettre.',
 'Herinnering (optioneel)':'Emlékeztető (nem kötelező)','Geen herinnering':'Nincs emlékeztető','10 minuten vooraf':'10 perccel előtte','30 minuten vooraf':'30 perccel előtte','1 uur vooraf':'1 órával előtte','2 uur vooraf':'2 órával előtte','1 dag vooraf':'1 nappal előtte','Herinnering':'Emlékeztető','Zet in mijn telefoonagenda':'Hozzáadás a telefonom naptárához','vooraf':'előtte','minuten':'perc','uur':'óra','dag':'nap','om':'ekkor:','over':'ennyi múlva:','De afspraak is klaar voor uw telefoonagenda. Open het bestand afspraak.ics om hem toe te voegen.':'Az időpont készen áll a telefon naptárához. Nyissa meg az afspraak.ics fájlt a hozzáadáshoz.',
 'Extra info (optioneel)':'Extra információ (nem kötelező)','Extra info':'Extra információ','Opmerking of verbetering doorgeven':'Észrevétel vagy javaslat küldése','Opmerking doorgeven':'Észrevétel küldése','Wat wilt u laten weten? (een opmerking, een idee of een probleem)':'Mit szeretne közölni? (észrevétel, ötlet vagy probléma)','🎤 Opmerking inspreken':'🎤 Észrevétel bemondása','Opmerking versturen':'Észrevétel elküldése','Gebruik van de agenda':'A naptár használata','Zo ziet u of de agenda echt gebruikt wordt.':'Itt látható, hogy a naptárat valóban használják-e.','Gebruik verversen':'Használat frissítése','Toon alle agenda’s in mijn overzicht':'Minden naptár megjelenítése az áttekintésemben','Gebruiksoverzicht':'Használati áttekintés','Opmerkingen van gebruikers':'A felhasználók észrevételei','Opmerkingen verversen':'Észrevételek frissítése','Opmerkingen':'Észrevételek','Persoon':'Személy','Laatst geopend':'Utoljára megnyitva','Keer geopend':'Megnyitások száma','Afspraken aangemaakt':'Létrehozott időpontok','nog nooit':'még soha','Even geduld…':'Egy pillanat…','Gebruiksoverzicht bijgewerkt.':'A használati áttekintés frissítve.','Kon het gebruik niet ophalen.':'A használat nem kérhető le.','Nog geen opmerkingen.':'Még nincs észrevétel.','Kon de opmerkingen niet ophalen.':'Az észrevételek nem kérhetők le.','Verwijder opmerking van':'Észrevétel törlése tőle:','Opmerking verwijderd.':'Észrevétel törölve.','Verwijderen is niet gelukt.':'A törlés nem sikerült.','Schrijf eerst uw opmerking.':'Először írja meg az észrevételét.','Bedankt voor uw opmerking. Ze is verstuurd.':'Köszönjük az észrevételét. Elküldtük.','Versturen is niet gelukt. Probeer het later opnieuw. Uw tekst blijft staan.':'A küldés nem sikerült. Próbálja újra később. A szöveg megmarad.','Ik luister. Spreek nu uw opmerking in.':'Hallgatom. Mondja be most az észrevételét.','Verstaan: ':'Értettem: ','Ik heb niets verstaan. Probeer het opnieuw of typ uw opmerking.':'Nem értettem. Próbálja újra, vagy írja be az észrevételt.','U ziet nu alle agenda’s, behalve die van personen die hun agenda privé hebben gemaakt.':'Most minden naptárat lát, kivéve azokét, akik privátra állították a naptárukat.',
 'Toegankelijke gedeelde agenda':'Akadálymentes közös naptár','Ga direct naar de inhoud':'Ugrás a tartalomhoz','Gedeelde agenda':'Közös naptár','Uitloggen':'Kijelentkezés','Wie bent u?':'Ki Ön?','Gebruikers':'Felhasználók',
@@ -604,28 +631,53 @@ $('#lgL').onchange=$('#lgS').onchange=e=>setLang(e.target.value);
 const HIDES=[['inst','Instellingen tonen'],['spraak','Afspraak inspreken'],['samen','Samen met'],['herhalen','Herhalen'],['eind','Eindtijd'],['act','Vaste activiteit kiezen'],['print','Afdrukken'],['weergaven','Week-, maand- en jaarweergave']];
 function isGrid(){return S().ui==='normaal'||S().size<=150}
 const isAdmin=()=>!!S().admin||!Object.values(db.users).some(u=>u.admin);
+let admSel=null;
+const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+function klBlock(n,u,key,title,dbg,dfg){const k=u.kl||{},on=!!k[key+'b'],bg=k[key+'b']||dbg,fg=k[key+'t']||dfg,r=contrast(bg,fg);
+ return `<div><label class="chk"><input type="checkbox" data-adm="klon" data-p="${esc(n)}" data-o="${key}" ${on?'checked':''}> ${title}</label>
+ <div class="row"><label for="kl_${key}b_${esc(n)}">Achtergrond</label><input type="color" id="kl_${key}b_${esc(n)}" data-adm="kl" data-p="${esc(n)}" data-o="${key}b" value="${bg}" ${on?'':'disabled'}>
+ <label for="kl_${key}t_${esc(n)}">Tekst</label><input type="color" id="kl_${key}t_${esc(n)}" data-adm="kl" data-p="${esc(n)}" data-o="${key}t" value="${fg}" ${on?'':'disabled'}></div>
+ ${on?`<span class="kpv" style="background:${bg};color:${fg}">${key==='v'?'▶ 10':'● 2'}</span> <span>Contrast ${r.toFixed(1).replace('.',',')} : 1 – ${r>=7?'voldoet (AAA)':r>=4.5?'voldoende (AA), niet AAA':'te laag, kies andere kleuren'}</span>`:''}</div>`}
 function renderAdm(){
  const adm=isAdmin();$('#admBtn').hidden=!adm;
  if(!adm){$('#adm').hidden=true;$('#admBtn').setAttribute('aria-expanded','false');return}
  if($('#adm').hidden)return;
  $('#admInfo').textContent=Object.values(db.users).some(u=>u.admin)?'U bent beheerder.':'Er is nog geen beheerder. Vink bij uzelf “Beheerder” aan.';
- const all=Object.keys(db.users);
- $('#admList').innerHTML=all.map(n=>{const u=db.users[n],o=all.filter(x=>x!==n);
-  return `<li class="dag"><h3>${esc(uname(n))} <span class="sw" style="background:${colorOf(n)}"></span></h3>
+ const all=Object.keys(db.users);if(!admSel||!db.users[admSel])admSel=db.users[me]?me:all[0];
+ const act=document.activeElement&&document.activeElement.id==='admWho';
+ $('#admWho').innerHTML=all.map(n=>`<option value="${esc(n)}"${n===admSel?' selected':''}>${esc(uname(n))}</option>`).join('');if(act)$('#admWho').focus();
+ const n=admSel,u=db.users[n],o=all.filter(x=>x!==n);
+ $('#admList').innerHTML=`<li class="dag"><h3>${esc(uname(n))} <span class="sw" style="background:${colorOf(n)}"></span></h3>
+ <div class="grid2">
+ <fieldset><legend>Rechten</legend>
  <label class="chk"><input type="checkbox" data-adm="admin" data-p="${esc(n)}" ${u.admin?'checked':''}> Beheerder</label>
- <label class="chk"><input type="checkbox" data-adm="priv" data-p="${esc(n)}" ${u.priv?'checked':''}> Agenda is privé</label>
+ <label class="chk"><input type="checkbox" data-adm="priv" data-p="${esc(n)}" ${u.priv?'checked':''}> Agenda is privé</label></fieldset>
  <fieldset><legend>Agenda’s die ${esc(uname(n))} ziet</legend>${o.length?o.map(x=>`<label class="chk"><input type="checkbox" data-adm="sees" data-p="${esc(n)}" data-o="${esc(x)}" ${(u.sees||[]).includes(x)?'checked':''}> ${esc(uname(x))}</label>`).join(''):'<p>Nog geen andere personen.</p>'}</fieldset>
  <fieldset><legend>Vereenvoudigen voor ${esc(uname(n))}</legend>${HIDES.map(([k,l])=>`<label class="chk"><input type="checkbox" data-adm="hide" data-p="${esc(n)}" data-o="${k}" ${(u.hide||[]).includes(k)?'checked':''}> ${l}</label>`).join('')}<label class="chk"><input type="checkbox" data-adm="lay" data-p="${esc(n)}" ${u.lay==='form'?'checked':''}> Afspraak toevoegen bovenaan</label></fieldset>
- <button type="button" data-adel="${esc(n)}" aria-label="Verwijder persoon ${esc(uname(n))}">Verwijderen</button></li>`}).join('')}
+ <fieldset><legend>Kleuren in de maandweergave voor ${esc(uname(n))}</legend>
+ ${klBlock(n,u,'v','Eigen kleuren voor de dag van vandaag','#ffd400','#000000')}
+ ${klBlock(n,u,'a','Eigen kleuren voor dagen met afspraken','#cfe8ff','#000000')}
+ <div class="row"><button type="button" data-klreset="${esc(n)}">Kleuren terugzetten naar standaard</button></div></fieldset>
+ </div>
+ <div class="row"><button type="button" data-adel="${esc(n)}" aria-label="Verwijder persoon ${esc(uname(n))}">Persoon verwijderen</button></div></li>`}
+$('#admWho').onchange=e=>{admSel=e.target.value;renderAdm()};
+function admTab(k,focus){['P','G','O','B'].forEach(x=>{const t=$('#tab'+x),on=x===k;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;$('#pn'+x).hidden=!on});if(focus)$('#tab'+k).focus();if(k==='G')loadUse();if(k==='O')loadFb()}
+document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(b)admTab(b.dataset.tab,false)};
+document.querySelector('.tabs').onkeydown=e=>{const L=['P','G','O','B'],c=document.activeElement.dataset.tab;if(!c)return;let i=L.indexOf(c);
+ if(e.key==='ArrowRight')i=(i+1)%4;else if(e.key==='ArrowLeft')i=(i+3)%4;else if(e.key==='Home')i=0;else if(e.key==='End')i=3;else return;e.preventDefault();admTab(L[i],true)};
 $('#admBtn').onclick=()=>{const open=$('#adm').hidden;$('#adm').hidden=!open;$('#admBtn').setAttribute('aria-expanded',open);$('#admBtn').textContent=open?'Beheer verbergen':'Beheer tonen';renderAdm()};
 $('#admList').onchange=e=>{const c=e.target,p=c.dataset.p,k=c.dataset.adm;if(!k||!db.users[p])return;const u=db.users[p];
  if(k==='admin')u.admin=c.checked;else if(k==='priv')u.priv=c.checked;
  else if(k==='hide'){const o=c.dataset.o;u.hide=(u.hide||[]).filter(x=>x!==o);if(c.checked)u.hide.push(o)}
  else if(k==='lay')u.lay=c.checked?'form':'';
+ else if(k==='klon'){const o=c.dataset.o;u.kl=u.kl||{};if(c.checked){u.kl[o+'b']=u.kl[o+'b']||(o==='v'?'#ffd400':'#cfe8ff');u.kl[o+'t']=u.kl[o+'t']||'#000000'}else{delete u.kl[o+'b'];delete u.kl[o+'t']}}
+ else if(k==='kl'){u.kl=u.kl||{};u.kl[c.dataset.o]=c.value}
  else{const o=c.dataset.o;u.sees=(u.sees||[]).filter(x=>x!==o);if(c.checked)u.sees.push(o)}
  save();apply();renderSettings();render();say('Instelling opgeslagen voor '+uname(p)+'.');
- const q=`[data-adm="${k}"][data-p="${CSS.escape(p)}"]`+(k==='sees'||k==='hide'?`[data-o="${CSS.escape(c.dataset.o)}"]`:'');const el=document.querySelector(q);if(el)el.focus()};
-$('#admList').onclick=e=>{const b=e.target.closest('[data-adel]');if(!b)return;openInst(true);$('#dp').value=b.dataset.adel;$('#dpBtn').click()};
+ const q=`[data-adm="${k}"][data-p="${CSS.escape(p)}"]`+(k==='sees'||k==='hide'||k==='klon'||k==='kl'?`[data-o="${CSS.escape(c.dataset.o)}"]`:'');const el=document.querySelector(q);if(el)el.focus()};
+$('#admList').onclick=e=>{const r=e.target.closest('[data-klreset]');if(r){const u=db.users[r.dataset.klreset];if(u){delete u.kl;save();apply();render();renderAdm();say('Kleuren teruggezet naar standaard.')}return}
+ const b=e.target.closest('[data-adel]');if(!b)return;openInst(true);$('#dp').value=b.dataset.adel;$('#dpBtn').click()};
 function adminAdd(){const n=$('#anp').value.trim();if(!n){say('Typ eerst een naam.');$('#anp').focus();return}
  const ex=findByName(n);if(ex){say(uname(ex)+' bestaat al.');return}
  db.users[newId()]=mkUser(n);save();$('#anp').value='';renderSettings();renderForm();say(n+' is aangemaakt.');$('#anp').focus()}
@@ -746,7 +798,7 @@ $('#fbList').onclick=async e=>{const b=e.target.closest('[data-fbdel]');if(!b)re
  try{await sbFetch('items?id=eq.'+encodeURIComponent(b.dataset.fbdel),{method:'DELETE',headers:sbHead({Prefer:'return=minimal'})});say(tr('Opmerking verwijderd.'));loadFb()}catch(x){say(tr('Verwijderen is niet gelukt.'))}};
 $('#seeAll').onclick=()=>{change(s=>{s.sees=Object.keys(db.users).filter(x=>x!==me)},'U ziet nu alle agenda’s, behalve die van personen die hun agenda privé hebben gemaakt.')};
 const oldAdmBtn=$('#admBtn').onclick;
-$('#admBtn').onclick=()=>{oldAdmBtn();if(!$('#adm').hidden){loadUse();loadFb()}};
+$('#admBtn').onclick=()=>{oldAdmBtn();if(!$('#adm').hidden)admTab('P',false)};
 $('#fbOpen').onclick=()=>{const o=$('#fbBox').hidden;$('#fbBox').hidden=!o;$('#fbOpen').setAttribute('aria-expanded',o);if(o)$('#fbTxt').focus()};
 $('#fbSend').onclick=async()=>{const t=$('#fbTxt').value.trim();if(!t){say(tr('Schrijf eerst uw opmerking.'));$('#fbTxt').focus();return}
  const id='feedback:'+newId();
