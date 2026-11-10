@@ -74,6 +74,8 @@ html[data-heeft] .grid .heeft,html[data-heeft] .cal .heeft{background:var(--ab);
 #adm fieldset{margin:0;padding:8px 12px;border-width:2px}#adm .dag,#adm .row{margin:6px 0;gap:8px}#adm .dag{border-width:2px;padding:10px}
 #adm textarea{font:inherit;width:100%;min-height:8em}#adm .kpv{display:inline-block;padding:6px 14px;border:2px solid var(--bd);border-radius:6px;font-weight:700;margin:4px 0}
 html[data-lock="1"] #logout,html[data-lock="1"] #wissel{display:none!important}
+.vh{position:absolute;left:-9999px}
+#fbSec{margin-top:2rem}
 </style>
 </head>
 <body>
@@ -192,14 +194,7 @@ html[data-lock="1"] #logout,html[data-lock="1"] #wissel{display:none!important}
 <div class="row"><button id="typBtn">Verwerk zin</button></div>
 </section>
 
-<section id="fbSec" class="panel" aria-labelledby="fbH">
-<h2 id="fbH">Opmerking of verbetering doorgeven</h2>
-<button id="fbOpen" type="button" aria-expanded="false" aria-controls="fbBox">Opmerking doorgeven</button>
-<div id="fbBox" hidden>
-<label for="fbTxt">Wat wilt u laten weten? (een opmerking, een idee of een probleem)</label>
-<textarea id="fbTxt" rows="4" maxlength="2000"></textarea>
-<div class="row"><button id="fbMic" type="button">🎤 Opmerking inspreken</button><button id="fbSend" type="button">Opmerking versturen</button></div>
-</div></section>
+
 
 <section id="agenda" aria-labelledby="titel">
 <h2 id="titel" tabindex="-1">Agenda</h2>
@@ -236,6 +231,14 @@ html[data-lock="1"] #logout,html[data-lock="1"] #wissel{display:none!important}
 <button type="submit" id="fSave">Afspraak opslaan</button><button type="button" id="fCancel" hidden>Annuleren</button>
 </form>
 </section>
+<section id="fbSec" class="panel" aria-labelledby="fbH">
+<h2 id="fbH" class="vh">Opmerking of verbetering doorgeven</h2>
+<button id="fbOpen" type="button" aria-expanded="false" aria-controls="fbBox">Opmerking doorgeven</button>
+<div id="fbBox" hidden>
+<label for="fbTxt">Wat wilt u laten weten? (een opmerking, een idee of een probleem)</label>
+<textarea id="fbTxt" rows="4" maxlength="2000"></textarea>
+<div class="row"><button id="fbMic" type="button">🎤 Opmerking inspreken</button><button id="fbSend" type="button">Opmerking versturen</button></div>
+</div></section>
 </div>
 </main>
 <div id="printArea" role="dialog" aria-modal="true" aria-labelledby="pTitel" hidden><div class="row noprint"><button id="pPrint" type="button">🖨 Afdrukken</button><button id="pClose" type="button">Sluiten</button></div><div id="pBody"></div></div>
