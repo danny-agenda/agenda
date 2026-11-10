@@ -73,6 +73,7 @@ html[data-heeft] .grid .heeft,html[data-heeft] .cal .heeft{background:var(--ab);
 #adm .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:12px;align-items:start}
 #adm fieldset{margin:0;padding:8px 12px;border-width:2px}#adm .dag,#adm .row{margin:6px 0;gap:8px}#adm .dag{border-width:2px;padding:10px}
 #adm textarea{font:inherit;width:100%;min-height:8em}#adm .kpv{display:inline-block;padding:6px 14px;border:2px solid var(--bd);border-radius:6px;font-weight:700;margin:4px 0}
+html[data-lock="1"] #logout,html[data-lock="1"] #wissel{display:none!important}
 </style>
 </head>
 <body>
@@ -281,13 +282,20 @@ const names=e=>{const p=people(e).map(uname);return p.length>1?p.slice(0,-1).joi
 const colorOf=n=>(db.users[n]&&/^#[0-9a-f]{6}$/i.test(db.users[n].color))?db.users[n].color:'#888888';
 
 /* Inloggen */
+let LOCK=null;
+(function(){try{const q=new URLSearchParams(location.search);
+ if(q.has('vrij')){localStorage.removeItem('agenda-vast')}
+ else if(q.get('p')){localStorage.setItem('agenda-vast',q.get('p'))}
+ LOCK=localStorage.getItem('agenda-vast')||null;
+ if(q.has('p')||q.has('vrij'))history.replaceState(null,'',location.pathname)}catch(e){}})();
 function showLogin(){
+ if(LOCK&&db.users[LOCK]){login(LOCK);return}
  me=null;$('#app').hidden=true;$('#login').hidden=false;$('#logout').hidden=true;$('#wissel').hidden=true;$('#pinBox').hidden=true;$('#undoBar').hidden=true;$('#wie').textContent='';
  const R=document.documentElement;R.dataset.theme='standaard';R.dataset.font='atkinson';R.dataset.ui='groot';R.dataset.hide='';R.dataset.lay='';R.style.fontSize='100%';
  $('#users').innerHTML=Object.keys(db.users).map(n=>`<li><button data-login="${esc(n)}" style="border-color:${colorOf(n)};border-width:.4rem" aria-label="Inloggen als ${esc(uname(n))}">${esc(uname(n))}</button></li>`).join('');
 }
 function login(n){
- me=n;markSeen();setTimeout(checkWarn,1500);LANG=S().lang||LANG;fillLang();endEdit();undoList=null;$('#undoBar').hidden=true;$('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;
+ me=n;document.documentElement.dataset.lock=(LOCK&&n===LOCK)?'1':'';markSeen();setTimeout(checkWarn,1500);LANG=S().lang||LANG;fillLang();endEdit();undoList=null;$('#undoBar').hidden=true;$('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;
  $('#wie').textContent='Ingelogd als '+uname(n);
  cur=TODAY();apply();renderSettings();renderForm();render();hpush();
  if(!S().done&&!(S().hide||[]).includes('inst')){openInst(true);$('#welkom').textContent='Welkom '+uname(n)+'. Stel uw instellingen eenmalig in. U kunt ze later altijd wijzigen.';say('Welkom '+uname(n)+'. Stel uw instellingen in.')}
@@ -520,6 +528,7 @@ hu:{name:'Magyar',code:'hu',loc:'hu-HU',sr:'hu-HU',h:'óra',and:' és ',
 p:{tod:'ma',tom:'holnap',dat:'holnapután',days:['vasárnap','hétfő','kedd','szerd','csütörtök','péntek','szombat'],half:'fél',hr:/(\S+) ó(?:ra|rakor)/,pm:/délután|este/,junk:/(^| )(és|-?kor|-?val|-?vel)( |$)/g,
 num:{egy:1,kettő:2,két:2,három:3,négy:4,öt:5,hat:6,hét:7,nyolc:8,kilenc:9,tíz:10,tizenegy:11,tizenkettő:12,tizenhárom:13,tizennégy:14,tizenöt:15,tizenhat:16,tizenhét:17,tizennyolc:18,tizenkilenc:19,húsz:20,huszonegy:21,huszonkettő:22,huszonhárom:23}},
 d:{
+'Persoonlijke link':'Személyes hivatkozás','Link':'Hivatkozás','Link kopiëren':'Hivatkozás másolása','Link gekopieerd.':'A hivatkozás kimásolva.','Selecteer de link en kopieer ze met Ctrl+C.':'Jelölje ki a hivatkozást, és másolja a Ctrl+C-vel.',
 'Onderdelen van Beheer':'A Kezelés részei','Gebruik':'Használat','Instellingen van de gekozen persoon':'A kiválasztott személy beállításai','Rechten':'Jogosultságok','Kleuren in de maandweergave voor':'Színek a hónap nézetben:','Eigen kleuren voor de dag van vandaag':'Saját színek a mai naphoz','Eigen kleuren voor dagen met afspraken':'Saját színek az időpontos napokhoz','Achtergrond':'Háttér','Tekst':'Szöveg','Kleuren terugzetten naar standaard':'Színek visszaállítása az alapértelmezettre','Kleuren teruggezet naar standaard.':'A színek visszaállítva az alapértelmezettre.',
 'Herinnering (optioneel)':'Emlékeztető (nem kötelező)','Geen herinnering':'Nincs emlékeztető','10 minuten vooraf':'10 perccel előtte','30 minuten vooraf':'30 perccel előtte','1 uur vooraf':'1 órával előtte','2 uur vooraf':'2 órával előtte','1 dag vooraf':'1 nappal előtte','Herinnering':'Emlékeztető','Zet in mijn telefoonagenda':'Hozzáadás a telefonom naptárához','vooraf':'előtte','minuten':'perc','uur':'óra','dag':'nap','om':'ekkor:','over':'ennyi múlva:','De afspraak is klaar voor uw telefoonagenda. Open het bestand afspraak.ics om hem toe te voegen.':'Az időpont készen áll a telefon naptárához. Nyissa meg az afspraak.ics fájlt a hozzáadáshoz.',
 'Extra info (optioneel)':'Extra információ (nem kötelező)','Extra info':'Extra információ','Opmerking of verbetering doorgeven':'Észrevétel vagy javaslat küldése','Opmerking doorgeven':'Észrevétel küldése','Wat wilt u laten weten? (een opmerking, een idee of een probleem)':'Mit szeretne közölni? (észrevétel, ötlet vagy probléma)','🎤 Opmerking inspreken':'🎤 Észrevétel bemondása','Opmerking versturen':'Észrevétel elküldése','Gebruik van de agenda':'A naptár használata','Zo ziet u of de agenda echt gebruikt wordt.':'Itt látható, hogy a naptárat valóban használják-e.','Gebruik verversen':'Használat frissítése','Toon alle agenda’s in mijn overzicht':'Minden naptár megjelenítése az áttekintésemben','Gebruiksoverzicht':'Használati áttekintés','Opmerkingen van gebruikers':'A felhasználók észrevételei','Opmerkingen verversen':'Észrevételek frissítése','Opmerkingen':'Észrevételek','Persoon':'Személy','Laatst geopend':'Utoljára megnyitva','Keer geopend':'Megnyitások száma','Afspraken aangemaakt':'Létrehozott időpontok','nog nooit':'még soha','Even geduld…':'Egy pillanat…','Gebruiksoverzicht bijgewerkt.':'A használati áttekintés frissítve.','Kon het gebruik niet ophalen.':'A használat nem kérhető le.','Nog geen opmerkingen.':'Még nincs észrevétel.','Kon de opmerkingen niet ophalen.':'Az észrevételek nem kérhetők le.','Verwijder opmerking van':'Észrevétel törlése tőle:','Opmerking verwijderd.':'Észrevétel törölve.','Verwijderen is niet gelukt.':'A törlés nem sikerült.','Schrijf eerst uw opmerking.':'Először írja meg az észrevételét.','Bedankt voor uw opmerking. Ze is verstuurd.':'Köszönjük az észrevételét. Elküldtük.','Versturen is niet gelukt. Probeer het later opnieuw. Uw tekst blijft staan.':'A küldés nem sikerült. Próbálja újra később. A szöveg megmarad.','Ik luister. Spreek nu uw opmerking in.':'Hallgatom. Mondja be most az észrevételét.','Verstaan: ':'Értettem: ','Ik heb niets verstaan. Probeer het opnieuw of typ uw opmerking.':'Nem értettem. Próbálja újra, vagy írja be az észrevételt.','U ziet nu alle agenda’s, behalve die van personen die hun agenda privé hebben gemaakt.':'Most minden naptárat lát, kivéve azokét, akik privátra állították a naptárukat.',
@@ -659,6 +668,9 @@ function renderAdm(){
  ${klBlock(n,u,'v','Eigen kleuren voor de dag van vandaag','#ffd400','#000000')}
  ${klBlock(n,u,'a','Eigen kleuren voor dagen met afspraken','#cfe8ff','#000000')}
  <div class="row"><button type="button" data-klreset="${esc(n)}">Kleuren terugzetten naar standaard</button></div></fieldset>
+ <fieldset><legend>Persoonlijke link voor ${esc(uname(n))}</legend>
+ <p>Zet deze link op het toestel van ${esc(uname(n))}. Zij of hij ziet dan meteen de eigen agenda, zonder lijst met namen.</p>
+ <div class="row"><label for="plink">Link</label><input type="text" id="plink" readonly value="${esc(location.origin+location.pathname+'?p='+n)}" style="width:100%"><button type="button" data-copylink="1">Link kopiëren</button></div></fieldset>
  </div>
  <div class="row"><button type="button" data-adel="${esc(n)}" aria-label="Verwijder persoon ${esc(uname(n))}">Persoon verwijderen</button></div></li>`}
 $('#admWho').onchange=e=>{admSel=e.target.value;renderAdm()};
@@ -676,7 +688,8 @@ $('#admList').onchange=e=>{const c=e.target,p=c.dataset.p,k=c.dataset.adm;if(!k|
  else{const o=c.dataset.o;u.sees=(u.sees||[]).filter(x=>x!==o);if(c.checked)u.sees.push(o)}
  save();apply();renderSettings();render();say('Instelling opgeslagen voor '+uname(p)+'.');
  const q=`[data-adm="${k}"][data-p="${CSS.escape(p)}"]`+(k==='sees'||k==='hide'||k==='klon'||k==='kl'?`[data-o="${CSS.escape(c.dataset.o)}"]`:'');const el=document.querySelector(q);if(el)el.focus()};
-$('#admList').onclick=e=>{const r=e.target.closest('[data-klreset]');if(r){const u=db.users[r.dataset.klreset];if(u){delete u.kl;save();apply();render();renderAdm();say('Kleuren teruggezet naar standaard.')}return}
+$('#admList').onclick=async e=>{const cl=e.target.closest('[data-copylink]');if(cl){const i=$('#plink');i.select();try{await navigator.clipboard.writeText(i.value);say('Link gekopieerd.')}catch(x){say('Selecteer de link en kopieer ze met Ctrl+C.')}return}
+ const r=e.target.closest('[data-klreset]');if(r){const u=db.users[r.dataset.klreset];if(u){delete u.kl;save();apply();render();renderAdm();say('Kleuren teruggezet naar standaard.')}return}
  const b=e.target.closest('[data-adel]');if(!b)return;openInst(true);$('#dp').value=b.dataset.adel;$('#dpBtn').click()};
 function adminAdd(){const n=$('#anp').value.trim();if(!n){say('Typ eerst een naam.');$('#anp').focus();return}
  const ex=findByName(n);if(ex){say(uname(ex)+' bestaat al.');return}
