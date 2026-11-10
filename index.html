@@ -58,6 +58,9 @@ html[data-ui=normaal] button,html[data-ui=normaal] select,html[data-ui=normaal] 
 html[data-ui=normaal] .mic{font-size:1.1rem;min-height:3rem}
 html[data-ui=normaal] .item .t{font-size:1.2rem}
 html[data-ui=normaal] :focus{outline-width:.1875rem}
+.info{white-space:pre-wrap;overflow-wrap:anywhere;display:inline-block;margin:.2em 0}
+#fI,#fbTxt{width:100%;font:inherit;min-height:4em}
+.seen td,.seen th{text-align:left;padding:.3em .6em;border-bottom:1px solid var(--bd)}
 </style>
 </head>
 <body>
@@ -141,6 +144,13 @@ html[data-ui=normaal] :focus{outline-width:.1875rem}
 <p id="admInfo"></p>
 <ul id="admList" aria-label="Personen"></ul>
 <fieldset><legend>Nieuwe persoon aanmaken</legend><label for="anp">Naam</label><input type="text" id="anp" maxlength="30" autocomplete="off"><div class="row"><button id="anpBtn" type="button">Persoon aanmaken</button></div></fieldset>
+<fieldset id="useSet"><legend>Gebruik van de agenda</legend>
+<p>Zo ziet u of de agenda echt gebruikt wordt.</p>
+<div class="row"><button id="useBtn" type="button">Gebruik verversen</button><button id="seeAll" type="button">Toon alle agenda’s in mijn overzicht</button></div>
+<div id="useOut" role="region" aria-live="polite" aria-label="Gebruiksoverzicht"></div></fieldset>
+<fieldset id="fbSet"><legend>Opmerkingen van gebruikers</legend>
+<div class="row"><button id="fbRefresh" type="button">Opmerkingen verversen</button></div>
+<ul id="fbList" aria-label="Opmerkingen"></ul></fieldset>
 <fieldset><legend>Back-up</legend>
 <div class="row"><button id="expBtn" type="button">Alle gegevens tonen voor back-up</button><button id="copyBtn" type="button">Kopiëren</button></div>
 <label for="expTxt">Back-uptekst (bewaar deze in een tekstbestand op uw externe schijf)</label>
@@ -155,6 +165,15 @@ html[data-ui=normaal] :focus{outline-width:.1875rem}
 <input type="text" id="typ" autocomplete="off">
 <div class="row"><button id="typBtn">Verwerk zin</button></div>
 </section>
+
+<section id="fbSec" class="panel" aria-labelledby="fbH">
+<h2 id="fbH">Opmerking of verbetering doorgeven</h2>
+<button id="fbOpen" type="button" aria-expanded="false" aria-controls="fbBox">Opmerking doorgeven</button>
+<div id="fbBox" hidden>
+<label for="fbTxt">Wat wilt u laten weten? (een opmerking, een idee of een probleem)</label>
+<textarea id="fbTxt" rows="4" maxlength="2000"></textarea>
+<div class="row"><button id="fbMic" type="button">🎤 Opmerking inspreken</button><button id="fbSend" type="button">Opmerking versturen</button></div>
+</div></section>
 
 <section id="agenda" aria-labelledby="titel">
 <h2 id="titel" tabindex="-1">Agenda</h2>
@@ -182,6 +201,7 @@ html[data-ui=normaal] :focus{outline-width:.1875rem}
 <label for="fH">Tijd</label><input type="time" id="fH" required value="09:00">
 <div id="snelT" class="row" role="group" aria-label="Snelkeuze tijdstip" hidden></div>
 <label for="fE">Eindtijd (optioneel)</label><input type="time" id="fE">
+<label for="fI">Extra info (optioneel)</label><textarea id="fI" rows="3" maxlength="1000"></textarea>
 <label for="fR">Herhalen</label><select id="fR"><option value="">Niet herhalen</option><option value="d">Elke dag</option><option value="w">Elke week</option><option value="m">Elke maand</option></select>
 <div id="rBox" hidden><label for="fU">Herhalen tot en met</label><input type="date" id="fU"></div>
 <fieldset id="samenSet"><legend>Samen met (de afspraak komt ook in hun agenda)</legend><div id="pBox"></div></fieldset>
@@ -240,7 +260,7 @@ function showLogin(){
  $('#users').innerHTML=Object.keys(db.users).map(n=>`<li><button data-login="${esc(n)}" style="border-color:${colorOf(n)};border-width:.4rem" aria-label="Inloggen als ${esc(uname(n))}">${esc(uname(n))}</button></li>`).join('');
 }
 function login(n){
- me=n;LANG=S().lang||LANG;fillLang();endEdit();undoList=null;$('#undoBar').hidden=true;$('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;
+ me=n;markSeen();LANG=S().lang||LANG;fillLang();endEdit();undoList=null;$('#undoBar').hidden=true;$('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;
  $('#wie').textContent='Ingelogd als '+uname(n);
  cur=TODAY();apply();renderSettings();renderForm();render();hpush();
  if(!S().done&&!(S().hide||[]).includes('inst')){openInst(true);$('#welkom').textContent='Welkom '+uname(n)+'. Stel uw instellingen eenmalig in. U kunt ze later altijd wijzigen.';say('Welkom '+uname(n)+'. Stel uw instellingen in.')}
@@ -343,9 +363,9 @@ function chipHtml(ev){
  if(!ev.length)return isGrid()?'':'Geen';
  return '<span class="chips" aria-hidden="true">'+ev.slice(0,4).map(e=>`<span class="chip" style="border-color:${colorOf(e.owner)}">${people(e).map(n=>`<span class="sw" style="background:${colorOf(n)}"></span>`).join('')}${e.time}</span>`).join('')+(ev.length>4?`<span class="chip">+${ev.length-4}</span>`:'')+'</span>'}
 function item(e){
- const aria=`${e.title}, ${e.date===cur||view==='dag'?'':label(e.date)+', '}om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}, met ${names(e)}`;
+ const aria=`${e.title}, ${e.date===cur||view==='dag'?'':label(e.date)+', '}om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}, met ${names(e)}${e.info?'. '+T('Extra info')+': '+e.info:''}`;
  return `<li class="item${S().chips?' blok':''}" role="group" tabindex="0" style="${S().chips?'border-color':'border-left-color'}:${colorOf(e.owner)}" aria-label="${esc(aria)}">
- <div><span class="t">${e.time}${e.end?'–'+e.end:''}</span><br><strong>${esc(e.title)}</strong><br>${people(e).map(n=>`<span class="sw" style="background:${colorOf(n)}"></span> ${esc(uname(n))}`).join(' ')}${e.who.length?'<span> (samen)</span>':''}</div>
+ <div><span class="t">${e.time}${e.end?'–'+e.end:''}</span><br><strong>${esc(e.title)}</strong><br>${e.info?`<span class="info">${esc(e.info)}</span><br>`:''}${people(e).map(n=>`<span class="sw" style="background:${colorOf(n)}"></span> ${esc(uname(n))}`).join(' ')}${e.who.length?'<span> (samen)</span>':''}</div>
  ${people(e).includes(me)?`<button data-edit="${e.id}" aria-label="Wijzig afspraak ${esc(e.title)} om ${spokenTime(e.time)}">Wijzigen</button><button data-del="${e.id}" aria-label="Verwijder afspraak ${esc(e.title)} om ${spokenTime(e.time)}">Verwijderen</button>${e.series?`<button data-delser="${e.series}" aria-label="Verwijder alle afspraken van de reeks ${esc(e.title)}">Hele reeks</button>`:''}`:''}</li>`}
 function render(){
  if(!me)return;
@@ -394,7 +414,7 @@ function addEv(ev,loud){
  const m=`Afspraak toegevoegd: ${ev.title}, ${label(ev.date)} om ${spokenTime(ev.time)}.`;say(m);if(loud)speak(m)}
 $('#f').onsubmit=e=>{e.preventDefault();
  const who=[...document.querySelectorAll('input[name=p]:checked')].map(c=>c.value);
- const rep=$('#fR').value,base={title:$('#fT').value.trim(),date:$('#fD').value,time:$('#fH').value,who,end:$('#fE').value||''};if(base.end&&base.end<=base.time){say('De eindtijd moet na de begintijd liggen.');$('#fE').focus();return}
+ const rep=$('#fR').value,base={title:$('#fT').value.trim(),date:$('#fD').value,time:$('#fH').value,who,end:$('#fE').value||'',info:$('#fI').value.trim()};if(base.end&&base.end<=base.time){say('De eindtijd moet na de begintijd liggen.');$('#fE').focus();return}
  if(editId)saveEdit(base);else if(rep)addSeries(base,rep,$('#fU').value||nextOcc(base.date,'m',3));else addEv(base,false);
  e.target.reset();$('#fD').value=cur;$('#fH').value='09:00';$('#rBox').hidden=true;markT();$('#titel').focus()};
 
@@ -404,7 +424,7 @@ function periodDays(kind){
  if(kind==='dag')return[cur];
  if(kind==='week'){const mon=addDays(cur,-((fromIso(cur).getDay()+6)%7));return[0,1,2,3,4,5,6].map(i=>addDays(mon,i))}
  const d=fromIso(cur),n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return[...Array(n).keys()].map(i=>iso(new Date(d.getFullYear(),d.getMonth(),i+1)))}
-function printItem(e){return `<div class="pi"><span class="t">${e.time}${e.end?'–'+e.end:''}</span> &ndash; <strong>${esc(e.title)}</strong><br>Met: ${esc(names(e))}</div>`}
+function printItem(e){return `<div class="pi"><span class="t">${e.time}${e.end?'–'+e.end:''}</span> &ndash; <strong>${esc(e.title)}</strong><br>Met: ${esc(names(e))}${e.info?`<br><em>${esc(e.info)}</em>`:''}</div>`}
 function printRange(kind,opener){
  const days=periodDays(kind);let title,body='';
  if(kind==='dag'){title='Afspraken op '+label(days[0])}
@@ -472,6 +492,7 @@ hu:{name:'Magyar',code:'hu',loc:'hu-HU',sr:'hu-HU',h:'óra',and:' és ',
 p:{tod:'ma',tom:'holnap',dat:'holnapután',days:['vasárnap','hétfő','kedd','szerd','csütörtök','péntek','szombat'],half:'fél',hr:/(\S+) ó(?:ra|rakor)/,pm:/délután|este/,junk:/(^| )(és|-?kor|-?val|-?vel)( |$)/g,
 num:{egy:1,kettő:2,két:2,három:3,négy:4,öt:5,hat:6,hét:7,nyolc:8,kilenc:9,tíz:10,tizenegy:11,tizenkettő:12,tizenhárom:13,tizennégy:14,tizenöt:15,tizenhat:16,tizenhét:17,tizennyolc:18,tizenkilenc:19,húsz:20,huszonegy:21,huszonkettő:22,huszonhárom:23}},
 d:{
+'Extra info (optioneel)':'Extra információ (nem kötelező)','Extra info':'Extra információ','Opmerking of verbetering doorgeven':'Észrevétel vagy javaslat küldése','Opmerking doorgeven':'Észrevétel küldése','Wat wilt u laten weten? (een opmerking, een idee of een probleem)':'Mit szeretne közölni? (észrevétel, ötlet vagy probléma)','🎤 Opmerking inspreken':'🎤 Észrevétel bemondása','Opmerking versturen':'Észrevétel elküldése','Gebruik van de agenda':'A naptár használata','Zo ziet u of de agenda echt gebruikt wordt.':'Itt látható, hogy a naptárat valóban használják-e.','Gebruik verversen':'Használat frissítése','Toon alle agenda’s in mijn overzicht':'Minden naptár megjelenítése az áttekintésemben','Gebruiksoverzicht':'Használati áttekintés','Opmerkingen van gebruikers':'A felhasználók észrevételei','Opmerkingen verversen':'Észrevételek frissítése','Opmerkingen':'Észrevételek','Persoon':'Személy','Laatst geopend':'Utoljára megnyitva','Keer geopend':'Megnyitások száma','Afspraken aangemaakt':'Létrehozott időpontok','nog nooit':'még soha','Even geduld…':'Egy pillanat…','Gebruiksoverzicht bijgewerkt.':'A használati áttekintés frissítve.','Kon het gebruik niet ophalen.':'A használat nem kérhető le.','Nog geen opmerkingen.':'Még nincs észrevétel.','Kon de opmerkingen niet ophalen.':'Az észrevételek nem kérhetők le.','Verwijder opmerking van':'Észrevétel törlése tőle:','Opmerking verwijderd.':'Észrevétel törölve.','Verwijderen is niet gelukt.':'A törlés nem sikerült.','Schrijf eerst uw opmerking.':'Először írja meg az észrevételét.','Bedankt voor uw opmerking. Ze is verstuurd.':'Köszönjük az észrevételét. Elküldtük.','Versturen is niet gelukt. Probeer het later opnieuw. Uw tekst blijft staan.':'A küldés nem sikerült. Próbálja újra később. A szöveg megmarad.','Ik luister. Spreek nu uw opmerking in.':'Hallgatom. Mondja be most az észrevételét.','Verstaan: ':'Értettem: ','Ik heb niets verstaan. Probeer het opnieuw of typ uw opmerking.':'Nem értettem. Próbálja újra, vagy írja be az észrevételt.','U ziet nu alle agenda’s, behalve die van personen die hun agenda privé hebben gemaakt.':'Most minden naptárat lát, kivéve azokét, akik privátra állították a naptárukat.',
 'Toegankelijke gedeelde agenda':'Akadálymentes közös naptár','Ga direct naar de inhoud':'Ugrás a tartalomhoz','Gedeelde agenda':'Közös naptár','Uitloggen':'Kijelentkezés','Wie bent u?':'Ki Ön?','Gebruikers':'Felhasználók',
 'Nieuwe gebruiker: typ uw naam':'Új felhasználó: írja be a nevét','Aanmaken en inloggen':'Létrehozás és bejelentkezés','Dit is een prototype: er is nog geen wachtwoord.':'Ez egy prototípus: még nincs jelszó.',
 'Instellingen tonen':'Beállítások megjelenítése','Instellingen verbergen':'Beállítások elrejtése','Mijn instellingen':'Saját beállításaim','Soort agenda':'A naptár típusa',
@@ -534,11 +555,11 @@ const tr=tr1,T=tr1;
 function say(t){t=tr(t);$('#status').textContent='';setTimeout(()=>$('#status').textContent=t,30)}
 function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(Array.isArray(t)?t.map(tr).join(' '):tr(t));u.lang=LOC();speechSynthesis.speak(u)}
 function dayText(d){const l=sorted(d);if(!l.length)return[label(d)+': geen afspraken.'];
- return[`${label(d)}: ${l.length} ${l.length>1?'afspraken':'afspraak'}.`].concat(l.map(e=>`Om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}: ${e.title}, met ${names(e)}.`))}
+ return[`${label(d)}: ${l.length} ${l.length>1?'afspraken':'afspraak'}.`].concat(l.map(e=>`Om ${spokenTime(e.time)}${e.end?T(' tot ')+spokenTime(e.end):''}: ${e.title}, met ${names(e)}.${e.info?' '+e.info+'.':''}`))}
 $('#read').onclick=()=>{let t;
  if(view==='dag')t=dayText(cur);
  else if(view==='week'){const mon=addDays(cur,-((fromIso(cur).getDay()+6)%7));t=['Deze week.'].concat(...[0,1,2,3,4,5,6].map(i=>dayText(addDays(mon,i))))}
- else if(view==='maand'){const l=inRange(cur.slice(0,7));t=[`${mlabel(cur)}: ${l.length} afspraken.`].concat(l.map(e=>`${label(e.date)} om ${spokenTime(e.time)}: ${e.title}, met ${names(e)}.`))}
+ else if(view==='maand'){const l=inRange(cur.slice(0,7));t=[`${mlabel(cur)}: ${l.length} afspraken.`].concat(l.map(e=>`${label(e.date)} om ${spokenTime(e.time)}: ${e.title}, met ${names(e)}.${e.info?' '+e.info+'.':''}`))}
  else{const y=fromIso(cur).getFullYear();t=[`Jaar ${y}.`].concat([...Array(12).keys()].map(m=>{const f=iso(new Date(y,m,1));return `${mlabel(f)}: ${inRange(y+'-'+pad(m+1)).length} afspraken.`}))}
  say('Voorlezen gestart.');speak(t)};
 $('#dpBtn').onclick=()=>{delN=$('#dp').value;if(!delN)return;
@@ -636,7 +657,7 @@ $('#pinClear').onclick=()=>change(s=>{delete s.pin},'Pincode gewist.');
 /* ===== Afspraak wijzigen en ongedaan maken ===== */
 let editId=null,undoList=null;
 function startEdit(id){const e=db.events.find(x=>x.id===id);if(!e)return;editId=id;
- $('#fT').value=e.title;$('#fD').value=e.date;$('#fH').value=e.time;$('#fE').value=e.end||'';markT();
+ $('#fT').value=e.title;$('#fD').value=e.date;$('#fH').value=e.time;$('#fE').value=e.end||'';$('#fI').value=e.info||'';markT();
  document.querySelectorAll('input[name=p]').forEach(c=>c.checked=people(e).includes(c.value));
  $('#fR').value='';$('#rBox').hidden=true;
  $('#fSave').textContent='Wijzigingen opslaan';$('#fCancel').hidden=false;$('#formH').textContent='Afspraak wijzigen';
@@ -644,7 +665,7 @@ function startEdit(id){const e=db.events.find(x=>x.id===id);if(!e)return;editId=
 function endEdit(){editId=null;$('#fSave').textContent='Afspraak opslaan';$('#fCancel').hidden=true;$('#formH').textContent='Afspraak toevoegen'}
 function saveEdit(b){const ev=db.events.find(x=>x.id===editId);if(!ev){endEdit();return}
  const others=b.who.filter(x=>x!==ev.owner);
- ev.title=b.title;ev.date=b.date;ev.time=b.time;ev.end=b.end;ev.who=ev.owner===me?others:others.concat([me]);
+ ev.title=b.title;ev.date=b.date;ev.time=b.time;ev.end=b.end;if(b.info)ev.info=b.info;else delete ev.info;ev.who=ev.owner===me?others:others.concat([me]);
  save();cur=ev.date;endEdit();renderForm();render();say('Afspraak gewijzigd: '+ev.title+'.')}
 $('#fCancel').onclick=()=>{endEdit();$('#f').reset();$('#fD').value=cur;$('#fH').value='09:00';markT();say('Wijzigen geannuleerd.')};
 function askUndo(gone,series){undoList=gone;const t=gone[0]?gone[0].title:'';
@@ -653,6 +674,56 @@ function askUndo(gone,series){undoList=gone;const t=gone[0]?gone[0].title:'';
  setTimeout(()=>$('#undoBtn').focus(),50)}
 $('#undoBtn').onclick=()=>{if(!undoList)return;db.events=db.events.concat(undoList.filter(g=>!db.events.some(x=>x.id===g.id)));undoList=null;save();$('#undoBar').hidden=true;render();say('De afspraak is teruggezet.');$('#titel').focus()};
 $('#undoNo').onclick=()=>{undoList=null;$('#undoBar').hidden=true;say('Gesloten.');$('#titel').focus()};
+
+
+/* ===== Gebruiksoverzicht en opmerkingen (aparte rijen: veranderen de agenda zelf niet) ===== */
+const DEV=/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent)?'gsm':'pc';
+const lastSeen={};
+function markSeen(){
+ if(!me||!synced||Date.now()-(lastSeen[me]||0)<600000)return;lastSeen[me]=Date.now();
+ let n=0;try{n=+localStorage.getItem('agenda-opens-'+me+DEV)||0;localStorage.setItem('agenda-opens-'+me+DEV,n+1)}catch(e){}
+ sbFetch('items?on_conflict=id',{method:'POST',headers:sbHead({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([{id:'seen:'+me+':'+DEV,kind:'seen',data:{u:me,dev:DEV,t:new Date().toISOString(),n:n+1},updated_at:new Date().toISOString()}])}).catch(()=>{})}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')markSeen()});
+const fmtT=t=>{try{return new Date(t).toLocaleString(LOC(),{dateStyle:'short',timeStyle:'short'})}catch(e){return t}};
+async function loadUse(){
+ const out=$('#useOut');out.textContent=tr('Even geduld…');
+ try{
+  const rows=await(await sbFetch('items?kind=eq.seen&select=data',{headers:sbHead()})).json();
+  const by={};rows.forEach(r=>{const d=r.data;if(!d||!db.users[d.u])return;(by[d.u]=by[d.u]||[]).push(d)});
+  const ids=Object.keys(db.users);
+  out.innerHTML='<table class="seen"><thead><tr><th scope="col">'+esc(tr('Persoon'))+'</th><th scope="col">'+esc(tr('Laatst geopend'))+'</th><th scope="col">'+esc(tr('Keer geopend'))+'</th><th scope="col">'+esc(tr('Afspraken aangemaakt'))+'</th></tr></thead><tbody>'+
+   ids.map(id=>{const l=by[id]||[],last=l.map(x=>x.t).sort().pop(),cnt=l.reduce((a,x)=>a+(x.n||0),0),mk=db.events.filter(e=>e.owner===id).length;
+    const devs=l.map(x=>x.dev).sort().join(' + ');
+    return '<tr><th scope="row">'+esc(uname(id))+'</th><td>'+(last?esc(fmtT(last))+(devs?' ('+esc(devs)+')':''):esc(tr('nog nooit')))+'</td><td>'+cnt+'</td><td>'+mk+'</td></tr>'}).join('')+'</tbody></table>';
+  translateDOM();say(tr('Gebruiksoverzicht bijgewerkt.'))}
+ catch(e){out.textContent=tr('Kon het gebruik niet ophalen.')}}
+async function loadFb(){
+ const ul=$('#fbList');
+ try{
+  const rows=await(await sbFetch('items?kind=eq.feedback&select=id,data',{headers:sbHead()})).json();
+  rows.sort((a,b)=>String(b.data.t).localeCompare(String(a.data.t)));
+  ul.innerHTML=rows.length?rows.map(r=>`<li class="dag"><strong>${esc(r.data.name||'?')}</strong>, ${esc(fmtT(r.data.t))}<br><span class="info">${esc(r.data.text)}</span><br><button type="button" data-fbdel="${esc(r.id)}" aria-label="${esc(tr('Verwijder opmerking van'))} ${esc(r.data.name||'')}">Verwijderen</button></li>`).join(''):'<li>'+esc(tr('Nog geen opmerkingen.'))+'</li>';
+  translateDOM()}
+ catch(e){ul.innerHTML='<li>'+esc(tr('Kon de opmerkingen niet ophalen.'))+'</li>'}}
+$('#useBtn').onclick=loadUse;$('#fbRefresh').onclick=loadFb;
+$('#fbList').onclick=async e=>{const b=e.target.closest('[data-fbdel]');if(!b)return;
+ try{await sbFetch('items?id=eq.'+encodeURIComponent(b.dataset.fbdel),{method:'DELETE',headers:sbHead({Prefer:'return=minimal'})});say(tr('Opmerking verwijderd.'));loadFb()}catch(x){say(tr('Verwijderen is niet gelukt.'))}};
+$('#seeAll').onclick=()=>{change(s=>{s.sees=Object.keys(db.users).filter(x=>x!==me)},'U ziet nu alle agenda’s, behalve die van personen die hun agenda privé hebben gemaakt.')};
+const oldAdmBtn=$('#admBtn').onclick;
+$('#admBtn').onclick=()=>{oldAdmBtn();if(!$('#adm').hidden){loadUse();loadFb()}};
+$('#fbOpen').onclick=()=>{const o=$('#fbBox').hidden;$('#fbBox').hidden=!o;$('#fbOpen').setAttribute('aria-expanded',o);if(o)$('#fbTxt').focus()};
+$('#fbSend').onclick=async()=>{const t=$('#fbTxt').value.trim();if(!t){say(tr('Schrijf eerst uw opmerking.'));$('#fbTxt').focus();return}
+ const id='feedback:'+newId();
+ try{await sbFetch('items?on_conflict=id',{method:'POST',headers:sbHead({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([{id,kind:'feedback',data:{u:me,name:uname(me),t:new Date().toISOString(),text:t},updated_at:new Date().toISOString()}])});
+  $('#fbTxt').value='';$('#fbBox').hidden=true;$('#fbOpen').setAttribute('aria-expanded','false');const m=tr('Bedankt voor uw opmerking. Ze is verstuurd.');say(m);speak(m);$('#fbOpen').focus()}
+ catch(e){say(tr('Versturen is niet gelukt. Probeer het later opnieuw. Uw tekst blijft staan.'))}};
+$('#fbMic').onclick=()=>{
+ if(!SR){say('Spraakherkenning wordt door deze browser niet ondersteund. Typ de zin in het tekstveld, of gebruik Chrome of Safari.');return}
+ const r=new SR();r.lang=LANGS[LANG].sr;r.interimResults=false;r.maxAlternatives=1;
+ r.onstart=()=>say(tr('Ik luister. Spreek nu uw opmerking in.'));
+ r.onresult=e=>{const t=e.results[0][0].transcript;$('#fbTxt').value=($('#fbTxt').value+' '+t).trim();say(tr('Verstaan: ')+t)};
+ r.onerror=()=>say(tr('Ik heb niets verstaan. Probeer het opnieuw of typ uw opmerking.'));
+ try{r.start()}catch(e){say(tr('Kon de microfoon niet starten.'))}};
 
 /* ===== Synchronisatie met de gedeelde database (Supabase) =====
    Elke persoon en elke afspraak is één rij in de tabel 'items'. Bij elke wijziging worden alleen de gewijzigde rijen verstuurd.
@@ -694,7 +765,7 @@ async function push(){
  finally{pushing=false}}
 function adoptRows(rows){
  const users={},events=[],r2=new Map();let meta=null;
- rows.forEach(r=>{if(r.kind==='meta'){meta=r.data&&r.data.t;return}r2.set(r.id,JSON.stringify(r.data));
+ rows.forEach(r=>{if(r.kind==='meta'){meta=r.data&&r.data.t;return}if(r.kind!=='user'&&r.kind!=='event')return;r2.set(r.id,JSON.stringify(r.data));
   if(r.kind==='user')users[r.id.slice(5)]=r.data;else if(r.kind==='event')events.push(r.data)});
  const before=JSON.stringify([db.users,db.events]),oldNames=JSON.stringify(Object.keys(db.users).map(k=>[k,db.users[k].name]));
  db={v:2,next:db.next||1,users,events};rem=r2;lastMeta=meta;localSave();
@@ -730,7 +801,7 @@ setInterval(()=>{if(document.visibilityState==='visible')tick()},10000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()});
 window.addEventListener('online',()=>tick());window.addEventListener('focus',()=>tick());
 localSave();fillLang();translateDOM();$('#login').hidden=true;say('Gegevens ophalen…');
-init().then(()=>{showLogin();translateDOM();if(online)say('Gesynchroniseerd met de gedeelde agenda.');else say('Geen verbinding: u werkt met de laatst bekende gegevens. Wijzigingen worden verstuurd zodra er weer verbinding is.')});
+init().then(()=>{showLogin();markSeen();translateDOM();if(online)say('Gesynchroniseerd met de gedeelde agenda.');else say('Geen verbinding: u werkt met de laatst bekende gegevens. Wijzigingen worden verstuurd zodra er weer verbinding is.')});
 </script>
 </body>
 </html>
